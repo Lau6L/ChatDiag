@@ -1,5 +1,6 @@
 package io.github.lau6l.chatdiag;
 
+import io.github.lau6l.chatdiag.util.Scheduler;
 import net.fabricmc.api.ModInitializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -11,5 +12,7 @@ public class ChatDiag implements ModInitializer {
     @Override
     public void onInitialize() {
         LOGGER.info("Initializing ChatDiag...");
+
+        Scheduler.initialize();
     }
 }
