@@ -1,0 +1,33 @@
+{
+  "schemaVersion": 1,
+  "id": "chatdiag",
+  "version": "${version}",
+
+  "name": "ChatDiag",
+  "description": "Simple, non-interactive chat dialogs (monologues!) for server events. Resource pack compatible.",
+  "authors": [
+    {
+      "name": "Lau6L",
+      "contact": {
+        "homepage": "https://github.com/Lau6L"
+      }
+    }
+  ],
+  "contact": {
+    "sources": "https://github.com/Lau6L/ChatDiag"
+  },
+
+  "license": "MIT",
+  "icon": "assets/chatdiag/icon.png",
+
+  "environment": "server",
+  "entrypoints": {
+    "main": [ "io.github.lau6l.chatdiag.ChatDiag" ]
+  },
+
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric-api": "*",
+    "minecraft": "${minecraft_version}"
+  }
+}
