@@ -8,7 +8,7 @@ import java.util.Iterator;
 import java.util.List;
 
 public class Scheduler {
-    private static final List<Pair<Long, SchedulableTask>> tasks = new ArrayList<>(4);
+    private static final List<Pair<Long, Schedulable>> tasks = new ArrayList<>(4);
     private static int tickCount = 0;
 
     public static void initialize() {
@@ -18,9 +18,9 @@ public class Scheduler {
     private static void tick() {
         tickCount++;
 
-        Iterator<Pair<Long, SchedulableTask>> it = tasks.iterator();
+        Iterator<Pair<Long, Schedulable>> it = tasks.iterator();
         while (it.hasNext()) {
-            Pair<Long, SchedulableTask> taskPair = it.next();
+            Pair<Long, Schedulable> taskPair = it.next();
             if (tickCount == taskPair.getLeft()) {
                 taskPair.getRight().run();
                 it.remove();
@@ -28,7 +28,7 @@ public class Scheduler {
         }
     }
 
-    public static void schedule(SchedulableTask task) {
+    public static void schedule(Schedulable task) {
         if (task.delay() == 0) {
             task.run();
             return;

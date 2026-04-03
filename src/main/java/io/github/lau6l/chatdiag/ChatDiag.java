@@ -2,6 +2,7 @@ package io.github.lau6l.chatdiag;
 
 import io.github.lau6l.chatdiag.util.Scheduler;
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -14,5 +15,9 @@ public class ChatDiag implements ModInitializer {
         LOGGER.info("Initializing ChatDiag...");
 
         Scheduler.initialize();
+    }
+
+    public static Identifier of(String value) {
+        return Identifier.of(MOD_ID, value);
     }
 }

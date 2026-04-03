@@ -2,13 +2,13 @@ package io.github.lau6l.chatdiag.util;
 
 import java.util.concurrent.CompletableFuture;
 
-public class SchedulableTask {
+public class Schedulable {
     private final Runnable runnable;
     private final long delay;
     private boolean isCancelled;
     private final CompletableFuture<Boolean> future;
 
-    public SchedulableTask(Runnable runnable, long delay) {
+    public Schedulable(Runnable runnable, long delay) {
         this.runnable = runnable;
         this.delay = delay < 0 ? 0 : delay;
         this.isCancelled = false;
@@ -24,10 +24,8 @@ public class SchedulableTask {
     }
 
     public boolean cancel() {
-        boolean wasCancelled = isCancelled;
         isCancelled = true;
-        future.complete(false);
-        return !wasCancelled;
+        return future.complete(false);
     }
 
     public CompletableFuture<Boolean> schedule() {
