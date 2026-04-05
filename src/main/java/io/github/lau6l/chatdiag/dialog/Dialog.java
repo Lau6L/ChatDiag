@@ -1,25 +1,43 @@
 package io.github.lau6l.chatdiag.dialog;
 
+import com.mojang.serialization.Codec;
+import com.mojang.serialization.codecs.RecordCodecBuilder;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
-import java.util.Arrays;
 import java.util.List;
 
-public record Dialog (List<String> lines, int delayMultiplier, String prefix, String suffix, String soundId, float soundPitch) {
-    public static final Dialog EMPTY = new Dialog(List.of(), 1, "", "", "", 1);
+public record Dialog (List<String> lines, int delayMultiplier, String prefix, String suffix, @Nullable Sound sound) {
+    public static final Dialog EMPTY = new Dialog(List.of(), 1, "", "", null);
+    public static final Codec<Dialog> CODEC = RecordCodecBuilder.create(
+            instance -> instance.group(
+                    Codec.STRING.listOf().fieldOf("lines").forGetter(Dialog::lines),
+                    Codec.INT.optionalFieldOf("delay_multiplier", 1).forGetter(Dialog::delayMultiplier),
+                    Codec.STRING.optionalFieldOf("prefix", "").forGetter(Dialog::prefix),
+                    Codec.STRING.optionalFieldOf("suffix", "").forGetter(Dialog::suffix),
+                    Sound.CODEC.optionalFieldOf("sound", null).forGetter(Dialog::sound)
+            ).apply(instance, Dialog::new)
+    );
 
-    public static Dialog createLine(String line, String soundId, float soundPitch) {
-        return createLine(line, "", "", soundId, soundPitch);
-    }
     public static Dialog createLine(String line, String prefix, String suffix, String soundId, float soundPitch) {
         return new Dialog(
                 List.of(line),
                 1,
                 prefix,
                 suffix,
-                soundId,
-                soundPitch
+                new Sound(
+                        soundId,
+                        soundPitch
+                )
+        );
+    }
+    public static Dialog createLine(String line, String prefix, String suffix, Sound sound) {
+        return new Dialog(
+                List.of(line),
+                1,
+                prefix,
+                suffix,
+                sound
         );
     }
 
@@ -49,12 +67,11 @@ public record Dialog (List<String> lines, int delayMultiplier, String prefix, St
     @Override
     public @NonNull String toString() {
         return "Dialog{" +
-                "soundId=" + soundId +
-                ", soundPitch=" + soundPitch +
+                "lines=" + lines +
+                ", delayMultiplier=" + delayMultiplier +
                 ", prefix='" + prefix + '\'' +
                 ", suffix='" + suffix + '\'' +
-                ", delayMultiplier=" + delayMultiplier +
-                ", lines=" + Arrays.toString(lines.toArray()) +
+                ", sound=" + sound +
                 '}';
     }
 }
