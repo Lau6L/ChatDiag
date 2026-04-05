@@ -15,6 +15,10 @@ public class DialogExecutor {
     public static final float BASE_DELAY = 15;
     public static final int MIN_DELAY = (int) (20 * 2.5);
 
+    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players) {
+        return startDialog(DialogLoader.loadDialog(id), players);
+    }
+
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Dialog dialog, Collection<ServerPlayerEntity> players) {
         CompletableFuture<Collection<ServerPlayerEntity>> future = new CompletableFuture<>();
         sendDialog(dialog, players, 0, future);

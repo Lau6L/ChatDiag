@@ -15,7 +15,7 @@ import java.util.stream.Collectors;
 
 public class DialogLoader {
     public static Dialog loadDialog(Identifier id) {
-        String file = String.join("/","assets", id.getNamespace(), "chatdiag", id.getPath() + ".json");
+        String file = String.join("/","data", id.getNamespace(), "chatdiag", id.getPath() + ".json");
         try (InputStream in = Files.newInputStream(
                 FabricLoader
                         .getInstance()
