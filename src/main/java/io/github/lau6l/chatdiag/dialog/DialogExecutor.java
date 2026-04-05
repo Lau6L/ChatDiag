@@ -22,16 +22,17 @@ public class DialogExecutor {
     }
 
     private static void sendDialog(Dialog dialog, Collection<ServerPlayerEntity> players, int i, CompletableFuture<Collection<ServerPlayerEntity>> future) {
-        boolean hasSound = dialog.sound() != null;
+        Sound sound = dialog.sound();
+        boolean hasSound = sound != null;
 
-        Identifier soundId = hasSound ? Identifier.of(dialog.sound().id()) : null;
+        Identifier soundId = hasSound ? Identifier.of(sound.id()) : null;
         for (ServerPlayerEntity player : players) {
             player.sendMessageToClient(Text.of(dialog.line(i)), false);
             if (hasSound)
                 player.playSound(
                         SoundEvent.of(soundId),
                         16,
-                        dialog.sound().pitch());
+                        sound.pitch());
         }
 
         if (i + 1 < dialog.lines().size()) {
