@@ -7,14 +7,14 @@ import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-public record Dialog (List<String> lines, int delayMultiplier, String prefix, String suffix, @Nullable Sound sound) {
+public record Dialog (List<String> lines, int delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable Sound sound) {
     public static final Dialog EMPTY = new Dialog(List.of(), 1, "", "", null);
     public static final Codec<Dialog> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
                     Codec.STRING.listOf().fieldOf("lines").forGetter(Dialog::lines),
                     Codec.INT.optionalFieldOf("delay_multiplier", 1).forGetter(Dialog::delayMultiplier),
-                    Codec.STRING.optionalFieldOf("prefix", "").forGetter(Dialog::prefix),
-                    Codec.STRING.optionalFieldOf("suffix", "").forGetter(Dialog::suffix),
+                    Codec.STRING.optionalFieldOf("prefix", null).forGetter(Dialog::prefix),
+                    Codec.STRING.optionalFieldOf("suffix", null).forGetter(Dialog::suffix),
                     Sound.CODEC.optionalFieldOf("sound", null).forGetter(Dialog::sound)
             ).apply(instance, Dialog::new)
     );
@@ -49,7 +49,7 @@ public record Dialog (List<String> lines, int delayMultiplier, String prefix, St
         return orBlank(prefix) + lines.get(index) + orBlank(suffix);
     }
 
-    public int wordsInLine(int index) {
+    public int words(int index) {
         String l = lines.get(index);
         boolean inWord = false;
         int wordCount = 0;

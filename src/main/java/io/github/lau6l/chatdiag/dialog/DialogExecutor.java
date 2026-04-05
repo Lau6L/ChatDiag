@@ -6,7 +6,6 @@ import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import org.apache.logging.log4j.util.Strings;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -23,20 +22,22 @@ public class DialogExecutor {
     }
 
     private static void sendDialog(Dialog dialog, Collection<ServerPlayerEntity> players, int i, CompletableFuture<Collection<ServerPlayerEntity>> future) {
+        boolean hasSound = dialog.sound() != null;
+
+        Identifier soundId = hasSound ? Identifier.of(dialog.sound().id()) : null;
         for (ServerPlayerEntity player : players) {
             player.sendMessageToClient(Text.of(dialog.line(i)), false);
-            if (Strings.isNotBlank(dialog.soundId()))
+            if (hasSound)
                 player.playSound(
-                        SoundEvent.of(Identifier.of(dialog.soundId())),
+                        SoundEvent.of(soundId),
                         16,
-                        dialog.soundPitch());
+                        dialog.sound().pitch());
         }
 
-        int delay = (int) (Math.max(MIN_DELAY, dialog.wordsInLine(i) * BASE_DELAY) * dialog.delayMultiplier());
-
         if (i + 1 < dialog.lines().size()) {
-            new Schedulable(() ->
-                    sendDialog(
+            int delay = (int) (Math.max(MIN_DELAY, dialog.words(i) * BASE_DELAY) * dialog.delayMultiplier());
+            new Schedulable(
+                    () -> sendDialog(
                             dialog,
                             players,
                             i + 1,
