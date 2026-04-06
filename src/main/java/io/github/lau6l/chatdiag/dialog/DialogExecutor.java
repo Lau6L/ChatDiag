@@ -33,18 +33,16 @@ public class DialogExecutor {
     }
 
     private static void sendDialog(Dialog dialog, Collection<ServerPlayerEntity> players, int i, CompletableFuture<Collection<ServerPlayerEntity>> future) {
-        Sound sound = dialog.sound();
-        boolean hasSound = sound != null;
-
-        Identifier soundId = hasSound ? Identifier.of(sound.id()) : null;
-        for (ServerPlayerEntity player : players) {
-            player.sendMessageToClient(Text.of(dialog.line(i)), false);
-            if (hasSound)
-                player.playSound(
-                        SoundEvent.of(soundId),
-                        16,
-                        sound.pitch());
-        }
+        dialog.get(i).map(
+                str -> {
+                    sendString(dialog.line(i), players, dialog.sound());
+                    return str;
+                },
+                line -> {
+                    sendLine(line, players);
+                    return line;
+                }
+        );
 
         if (i + 1 < dialog.lines().size()) {
             int delay = (int) (Math.max(MIN_DELAY, dialog.words(i) * BASE_DELAY) * dialog.delayMultiplier());
@@ -66,6 +64,24 @@ public class DialogExecutor {
     }
 
     private static void sendDialog(DialogLine line, Collection<ServerPlayerEntity> players, CompletableFuture<Collection<ServerPlayerEntity>> future) {
+        sendLine(line, players);
+
+        future.complete(players);
+    }
+
+    private static void sendString(String line, Collection<ServerPlayerEntity> players, Sound sound) {
+        for (ServerPlayerEntity player : players) {
+            player.sendMessageToClient(Text.of(line), false);
+            if (sound != null)
+                player.playSound(
+                        SoundEvent.of(sound.id()),
+                        16,
+                        sound.pitch()
+                );
+        }
+    }
+
+    private static void sendLine(DialogLine line, Collection<ServerPlayerEntity> players) {
         List<Sound> sounds = line.sound();
         boolean hasSound = sounds != null;
 
@@ -74,12 +90,10 @@ public class DialogExecutor {
             if (hasSound)
                 for (Sound sound : sounds)
                     player.playSound(
-                            SoundEvent.of(Identifier.of(sound.id())),
+                            SoundEvent.of(sound.id()),
                             16,
                             sound.pitch());
         }
-
-        future.complete(players);
     }
 }
 

@@ -25,6 +25,10 @@ public record Dialog (List<Either<String, DialogLine>> lines, int delayMultiplie
         return string == null ? "" : string;
     }
 
+    public Either<String, DialogLine> get(int index) {
+        return lines.get(index);
+    }
+
     public String line(int index) {
         return lines.get(index).map(
                 str -> orBlank(prefix) + str + orBlank(suffix),
