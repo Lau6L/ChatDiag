@@ -8,6 +8,7 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class DialogExecutor {
@@ -17,6 +18,12 @@ public class DialogExecutor {
 
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players) {
         return startDialog(DialogLoader.loadDialog(id), players);
+    }
+
+    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(DialogLine line, Collection<ServerPlayerEntity> players) {
+        CompletableFuture<Collection<ServerPlayerEntity>> future = new CompletableFuture<>();
+        sendDialog(line, players, future);
+        return future;
     }
 
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Dialog dialog, Collection<ServerPlayerEntity> players) {
@@ -56,6 +63,23 @@ public class DialogExecutor {
                         return true;
                     });
         } else future.complete(players);
+    }
+
+    private static void sendDialog(DialogLine line, Collection<ServerPlayerEntity> players, CompletableFuture<Collection<ServerPlayerEntity>> future) {
+        List<Sound> sounds = line.sound();
+        boolean hasSound = sounds != null;
+
+        for (ServerPlayerEntity player : players) {
+            player.sendMessageToClient(Text.of(line.get()), false);
+            if (hasSound)
+                for (Sound sound : sounds)
+                    player.playSound(
+                            SoundEvent.of(Identifier.of(sound.id())),
+                            16,
+                            sound.pitch());
+        }
+
+        future.complete(players);
     }
 }
 

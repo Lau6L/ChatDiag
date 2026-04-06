@@ -4,14 +4,12 @@ import com.mojang.brigadier.CommandDispatcher;
 import com.mojang.brigadier.arguments.FloatArgumentType;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.brigadier.context.CommandContext;
-import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import com.mojang.brigadier.suggestion.SuggestionProvider;
 import com.mojang.brigadier.suggestion.Suggestions;
 import com.mojang.brigadier.suggestion.SuggestionsBuilder;
+import com.mojang.brigadier.tree.LiteralCommandNode;
 import io.github.lau6l.chatdiag.ChatDiag;
-import io.github.lau6l.chatdiag.dialog.Dialog;
-import io.github.lau6l.chatdiag.dialog.DialogExecutor;
-import io.github.lau6l.chatdiag.dialog.Dialogs;
+import io.github.lau6l.chatdiag.dialog.*;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.command.argument.MessageArgumentType;
@@ -19,11 +17,12 @@ import net.minecraft.command.suggestion.SuggestionProviders;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
 
+import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
 public class ChatDiagCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
-        dispatcher.register(
+        LiteralCommandNode<ServerCommandSource> literalCommandNode = dispatcher.register(
                 CommandManager.literal("chatdiag")
                         .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
                         .then(
@@ -32,8 +31,9 @@ public class ChatDiagCommand {
                                         .then(getCreatedDialogBranch())
                         )
         );
-    }
 
+        dispatcher.register(CommandManager.literal("cdiag").redirect(literalCommandNode));
+    }
     private static LiteralArgumentBuilder<ServerCommandSource> getStoredDialogBranch() {
         return CommandManager.literal("dialog")
                 .then(
@@ -65,10 +65,17 @@ public class ChatDiagCommand {
                                                                 .executes(context -> {
                                                                     try {
                                                                         DialogExecutor.startDialog(
-                                                                                Dialog.createLine(
+                                                                                new DialogLine(
                                                                                         MessageArgumentType.getMessage(context, "line").getString(),
-                                                                                        IdentifierArgumentType.getIdentifier(context, "sound").toString(),
-                                                                                        FloatArgumentType.getFloat(context, "pitch")
+                                                                                        false,
+                                                                                        false,
+                                                                                        null,
+                                                                                        null,
+                                                                                        -1,
+                                                                                        List.of(new Sound(
+                                                                                                IdentifierArgumentType.getIdentifier(context, "sound").toString(),
+                                                                                                FloatArgumentType.getFloat(context, "pitch")
+                                                                                        ))
                                                                                 ),
                                                                                 EntityArgumentType.getPlayers(context, "players")
                                                                         );
