@@ -3,12 +3,13 @@ package io.github.lau6l.chatdiag.dialog;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.dynamic.Codecs;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
 
-public record Dialog (List<Either<String, DialogLine>> lines, int delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable Sound sound) {
+public record Dialog (List<Either<String, DialogLine>> lines, int delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound) {
     public static final Dialog EMPTY = new Dialog(List.of(), 1, "", "", null);
 
     public static final Codec<Dialog> CODEC = RecordCodecBuilder.create(
@@ -17,7 +18,7 @@ public record Dialog (List<Either<String, DialogLine>> lines, int delayMultiplie
                     Codec.INT.optionalFieldOf("delay_multiplier", 1).forGetter(Dialog::delayMultiplier),
                     Codec.STRING.optionalFieldOf("prefix", null).forGetter(Dialog::prefix),
                     Codec.STRING.optionalFieldOf("suffix", null).forGetter(Dialog::suffix),
-                    Sound.CODEC.optionalFieldOf("sound", null).forGetter(Dialog::sound)
+                    Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound", null).forGetter(Dialog::sound)
             ).apply(instance, Dialog::new)
     );
 

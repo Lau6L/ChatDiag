@@ -20,12 +20,6 @@ public class DialogExecutor {
         return startDialog(DialogLoader.loadDialog(id), players);
     }
 
-    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(DialogLine line, Collection<ServerPlayerEntity> players) {
-        CompletableFuture<Collection<ServerPlayerEntity>> future = new CompletableFuture<>();
-        sendDialog(line, players, future);
-        return future;
-    }
-
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Dialog dialog, Collection<ServerPlayerEntity> players) {
         CompletableFuture<Collection<ServerPlayerEntity>> future = new CompletableFuture<>();
         sendDialog(dialog, players, 0, future);
@@ -39,7 +33,7 @@ public class DialogExecutor {
                     return str;
                 },
                 line -> {
-                    sendLine(line, players);
+                    sendLine(line, players, dialog.sound());
                     return line;
                 }
         );
@@ -63,36 +57,30 @@ public class DialogExecutor {
         } else future.complete(players);
     }
 
-    private static void sendDialog(DialogLine line, Collection<ServerPlayerEntity> players, CompletableFuture<Collection<ServerPlayerEntity>> future) {
-        sendLine(line, players);
-
-        future.complete(players);
-    }
-
-    private static void sendString(String line, Collection<ServerPlayerEntity> players, Sound sound) {
+    public static void sendString(String line, Collection<ServerPlayerEntity> players, List<Sound> sounds) {
         for (ServerPlayerEntity player : players) {
             player.sendMessageToClient(Text.of(line), false);
-            if (sound != null)
-                player.playSound(
-                        SoundEvent.of(sound.id()),
-                        16,
-                        sound.pitch()
-                );
+            if (sounds != null) playSounds(player, sounds);
         }
     }
 
-    private static void sendLine(DialogLine line, Collection<ServerPlayerEntity> players) {
+    public static void sendLine(DialogLine line, Collection<ServerPlayerEntity> players, List<Sound> defaultSounds) {
         List<Sound> sounds = line.sound();
         boolean hasSound = sounds != null;
 
         for (ServerPlayerEntity player : players) {
             player.sendMessageToClient(Text.of(line.get()), false);
-            if (hasSound)
-                for (Sound sound : sounds)
-                    player.playSound(
-                            SoundEvent.of(sound.id()),
-                            16,
-                            sound.pitch());
+            if (defaultSounds != null && !line.overrideSound()) playSounds(player, defaultSounds);
+            if (hasSound) playSounds(player, sounds);
+        }
+    }
+
+    private static void playSounds(ServerPlayerEntity player, List<Sound> sounds) {
+        for (Sound sound : sounds) {
+            player.playSound(
+                    SoundEvent.of(sound.id()),
+                    16,
+                    sound.pitch());
         }
     }
 }

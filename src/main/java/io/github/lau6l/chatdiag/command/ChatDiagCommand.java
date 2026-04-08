@@ -64,20 +64,22 @@ public class ChatDiagCommand {
                                                         CommandManager.argument("pitch", FloatArgumentType.floatArg(0, 2))
                                                                 .executes(context -> {
                                                                     try {
-                                                                        DialogExecutor.startDialog(
+                                                                        DialogExecutor.sendLine(
                                                                                 new DialogLine(
                                                                                         MessageArgumentType.getMessage(context, "line").getString(),
+                                                                                        false,
                                                                                         false,
                                                                                         false,
                                                                                         null,
                                                                                         null,
                                                                                         -1,
                                                                                         List.of(new Sound(
-                                                                                                IdentifierArgumentType.getIdentifier(context, "sound").toString(),
+                                                                                                IdentifierArgumentType.getIdentifier(context, "sound"),
                                                                                                 FloatArgumentType.getFloat(context, "pitch")
                                                                                         ))
                                                                                 ),
-                                                                                EntityArgumentType.getPlayers(context, "players")
+                                                                                EntityArgumentType.getPlayers(context, "players"),
+                                                                                null
                                                                         );
                                                                         return 1;
                                                                     } catch (Exception e) {
