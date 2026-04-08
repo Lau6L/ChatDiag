@@ -5,6 +5,12 @@ import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
 import org.jspecify.annotations.NonNull;
 
+/**
+ * Represents a sound effect entry attached to a dialog or line.
+ *
+ * @param id the sound's identifier
+ * @param pitch the sound's pitch
+ */
 public record Sound(Identifier id, float pitch) {
     public static final Codec<Sound> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(

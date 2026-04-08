@@ -9,6 +9,13 @@ import java.util.List;
 
 import static io.github.lau6l.chatdiag.dialog.Dialog.orBlank;
 
+/**
+ * Represents a single complex line inside a dialog.
+ * <p>
+ * A line can override its parent dialog's prefix, suffix, and sound behavior.
+ *
+ * @see Dialog
+ */
 public record DialogLine(String line, boolean overridePrefix, boolean overrideSuffix, boolean overrideSound, @Nullable String prefix, @Nullable String suffix, int delay, @Nullable List<Sound> sound) {
     public static final Codec<DialogLine> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
@@ -23,13 +30,20 @@ public record DialogLine(String line, boolean overridePrefix, boolean overrideSu
             ).apply(instance, DialogLine::new)
     );
 
-    public String get(String prefix, String suffix) {
+    /**
+     * Returns this dialog line text, applying overrides to its parent dialog's prefix and suffix.
+     *
+     * @param prefix the dialog-level prefix
+     * @param suffix the dialog-level suffix
+     * @return the rendered line text
+     */
+    public String get(@Nullable String prefix, @Nullable String suffix) {
         return (overridePrefix ? orBlank(prefix) : "")
                 + get()
                 + (overrideSuffix ? orBlank(suffix) : "");
     }
 
-    public String get() {
+    private String get() {
         return orBlank(this.prefix) + line + orBlank(this.suffix);
     }
 }

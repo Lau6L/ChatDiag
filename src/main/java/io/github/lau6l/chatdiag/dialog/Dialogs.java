@@ -6,6 +6,11 @@ import net.minecraft.util.Identifier;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Collection of dialog identifiers. Registry-like.
+ * <p>
+ * Dialogs are collected during startup and frozen on server start.
+ */
 public class Dialogs {
     private static List<Identifier> dialogs = new ArrayList<>();
 

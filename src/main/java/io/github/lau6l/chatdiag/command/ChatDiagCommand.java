@@ -42,7 +42,7 @@ public class ChatDiagCommand {
                                 .executes(context -> {
                                     try {
                                         DialogExecutor.startDialog(
-                                                IdentifierArgumentType.getIdentifier(context, "dialog"),
+                                                IdentifierArgumentType.getIdentifier(context, "dialog_id"),
                                                 EntityArgumentType.getPlayers(context, "players")
                                         );
                                         return 1;
@@ -79,6 +79,8 @@ public class ChatDiagCommand {
                                                                                         ))
                                                                                 ),
                                                                                 EntityArgumentType.getPlayers(context, "players"),
+                                                                                null,
+                                                                                null,
                                                                                 null
                                                                         );
                                                                         return 1;

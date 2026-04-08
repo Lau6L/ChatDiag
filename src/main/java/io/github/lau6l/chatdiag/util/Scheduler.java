@@ -7,6 +7,11 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Lightweight tick-based task scheduler. Used to delay dialog lines between server ticks.
+ *
+ * @see Schedulable
+ */
 public class Scheduler {
     private static final List<Pair<Long, Schedulable>> tasks = new ArrayList<>(4);
     private static int tickCount = 0;
@@ -28,11 +33,16 @@ public class Scheduler {
         }
     }
 
+    /**
+     * Schedules a task for later execution.
+     *
+     * @param task the task to schedule
+     */
     public static void schedule(Schedulable task) {
-        if (task.delay() == 0) {
+        if (task.delay == 0) {
             task.run();
             return;
         }
-        tasks.add(new Pair<>(task.delay() + tickCount, task));
+        tasks.add(new Pair<>(task.delay + tickCount, task));
     }
 }
