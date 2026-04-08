@@ -61,6 +61,33 @@ public class DialogExecutor {
     }
 
     /**
+     * Loads a dialog from data and starts sending it to the given players.
+     * <p>
+     * Accepts a future to chain dialogs without recursion, no new future is created.
+     *
+     * @param id the dialog identifier
+     * @param players the target players
+     * @return the resulting dialog's future
+     */
+    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(Identifier id, Collection<ServerPlayerEntity> players, CompletableFuture<Collection<ServerPlayerEntity>> future) {
+        return startDialogWithFuture(DialogLoader.loadDialog(id), players, future);
+    }
+
+    /**
+     * Starts sending an in-memory dialog to the given players.
+     * <p>
+     * Accepts a future to chain dialogs without recursion, no new future is created.
+     *
+     * @param dialog the dialog to send
+     * @param players the target players
+     * @return the dialog's future
+     */
+    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(Dialog dialog, Collection<ServerPlayerEntity> players, CompletableFuture<Collection<ServerPlayerEntity>> future) {
+        sendDialog(dialog, players, 0, future);
+        return future;
+    }
+
+    /**
      * Sends the dialog line at the given index and schedules the next line, if one exists.
      *
      * @param dialog the dialog being sent
@@ -99,7 +126,13 @@ public class DialogExecutor {
                         ChatDiag.LOGGER.error("Error executing dialog:", e);
                         return true;
                     });
-        } else future.complete(players);
+        } else {
+            if (dialog.nextDialog() != null) {
+                startDialogWithFuture(dialog.nextDialog(), players, future);
+            } else {
+                future.complete(players);
+            }
+        }
     }
 
     /**

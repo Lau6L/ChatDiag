@@ -3,6 +3,7 @@ package io.github.lau6l.chatdiag.dialog;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
 import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
@@ -13,20 +14,24 @@ import java.util.List;
  * A full chat dialog definition. Loaded from {@link DialogLoader}.
  * <p>
  * A dialog contains a sequence of lines, a delay multiplier that controls relative pacing between
- * lines, optional global prefix and suffix texts, and an optional sound list.
+ * lines, optional global prefix and suffix texts, an optional sound list, and an optional identifier
+ * to another dialog to chain dialogs.
  * <p>
  * A line can be represented as either a {@link String} or a {@link DialogLine}. {@code DialogLine}s
  * are complex versions of a string line, with custom prefix, suffix, and sound attributes, as well as
  * override options.
+ * <p>
+ * Chained dialogs share the same future, which will only complete when the entire series of dialogs
+ * is complete.
  *
  * @see DialogLine
  * @see Sound
  * @see DialogLoader
  * @see DialogExecutor
  */
-public record Dialog (List<Either<String, DialogLine>> lines, int delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound) {
+public record Dialog (List<Either<String, DialogLine>> lines, int delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound, @Nullable Identifier nextDialog) {
     /** An empty dialog used when data loading fails. */
-    public static final Dialog EMPTY = new Dialog(List.of(), 1, "", "", null);
+    public static final Dialog EMPTY = new Dialog(List.of(), 1, null, null, null, null);
 
     public static final Codec<Dialog> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
@@ -34,7 +39,8 @@ public record Dialog (List<Either<String, DialogLine>> lines, int delayMultiplie
                     Codec.INT.optionalFieldOf("delay_multiplier", 1).forGetter(Dialog::delayMultiplier),
                     Codec.STRING.optionalFieldOf("prefix", null).forGetter(Dialog::prefix),
                     Codec.STRING.optionalFieldOf("suffix", null).forGetter(Dialog::suffix),
-                    Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound", null).forGetter(Dialog::sound)
+                    Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound", null).forGetter(Dialog::sound),
+                    Identifier.CODEC.optionalFieldOf("next_dialog", null).forGetter(Dialog::nextDialog)
             ).apply(instance, Dialog::new)
     );
 
