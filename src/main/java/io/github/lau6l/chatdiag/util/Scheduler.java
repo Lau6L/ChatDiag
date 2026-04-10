@@ -4,7 +4,6 @@ import net.fabricmc.fabric.api.event.lifecycle.v1.ServerTickEvents;
 import net.minecraft.util.Pair;
 
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 /**
@@ -22,15 +21,17 @@ public class Scheduler {
 
     private static void tick() {
         tickCount++;
+        if (tasks.isEmpty()) return;
 
-        Iterator<Pair<Long, Schedulable>> it = tasks.iterator();
-        while (it.hasNext()) {
-            Pair<Long, Schedulable> taskPair = it.next();
-            if (tickCount == taskPair.getLeft()) {
-                taskPair.getRight().run();
-                it.remove();
-            }
-        }
+        List<Pair<Long, Schedulable>> tasksToExecute = new ArrayList<>();
+        tasks.removeIf(task -> {
+            if (tickCount == task.getLeft()) {
+                tasksToExecute.add(task);
+                return true;
+            } else return false;
+        });
+        tasksToExecute.forEach(task ->
+                task.getRight().run());
     }
 
     /**

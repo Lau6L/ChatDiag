@@ -3,6 +3,7 @@ package io.github.lau6l.chatdiag.dialog;
 import io.github.lau6l.chatdiag.ChatDiag;
 import io.github.lau6l.chatdiag.util.Schedulable;
 import net.minecraft.server.network.ServerPlayerEntity;
+import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
@@ -83,6 +84,10 @@ public class DialogExecutor {
      * @return the dialog's future
      */
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(Dialog dialog, Collection<ServerPlayerEntity> players, CompletableFuture<Collection<ServerPlayerEntity>> future) {
+        if (dialog == null) {
+            future.complete(players);
+            return future;
+        }
         sendDialog(dialog, players, 0, future);
         return future;
     }
@@ -96,6 +101,15 @@ public class DialogExecutor {
      * @param future the dialog's future
      */
     private static void sendDialog(Dialog dialog, Collection<ServerPlayerEntity> players, int i, CompletableFuture<Collection<ServerPlayerEntity>> future) {
+        if (i >= dialog.lines().size()) {
+            if (dialog.nextDialog() != null) {
+                startDialogWithFuture(dialog.nextDialog(), players, future);
+            } else {
+                future.complete(players);
+            }
+            return;
+        }
+
         dialog.get(i).map(
                 str -> {
                     sendString(dialog.line(i), players, dialog.sound());
@@ -107,32 +121,24 @@ public class DialogExecutor {
                 }
         );
 
-        if (i + 1 < dialog.lines().size()) {
-            int delay = dialog.get(i).map(
-                    str -> (int) (Math.max(MIN_DELAY, dialog.words(i) * BASE_DELAY) * dialog.delayMultiplier()),
-                    DialogLine::delay
-            );
-            new Schedulable(
-                    () -> sendDialog(
-                            dialog,
-                            players,
-                            i + 1,
-                            future
-                    ),
-                    delay
-            )
-                    .schedule()
-                    .exceptionally((e) -> {
-                        ChatDiag.LOGGER.error("Error executing dialog:", e);
-                        return true;
-                    });
-        } else {
-            if (dialog.nextDialog() != null) {
-                startDialogWithFuture(dialog.nextDialog(), players, future);
-            } else {
-                future.complete(players);
-            }
-        }
+        int delay = dialog.get(i).map(
+                str -> (int) (Math.max(MIN_DELAY, dialog.words(i) * BASE_DELAY) * dialog.delayMultiplier()),
+                DialogLine::delay
+        );
+        new Schedulable(
+                () -> sendDialog(
+                        dialog,
+                        players,
+                        i + 1,
+                        future
+                ),
+                delay
+        )
+                .schedule()
+                .exceptionally((e) -> {
+                    ChatDiag.LOGGER.error("Error executing dialog:", e);
+                    return true;
+                });
     }
 
     /**
@@ -172,10 +178,15 @@ public class DialogExecutor {
 
     private static void playSounds(ServerPlayerEntity player, List<Sound> sounds) {
         for (Sound sound : sounds) {
-            player.playSound(
-                    SoundEvent.of(sound.id()),
-                    16,
-                    sound.pitch());
+            player.getEntityWorld()
+                    .playSound(
+                            null,
+                            player.getX(), player.getY(), player.getZ(),
+                            SoundEvent.of(sound.id()),
+                            SoundCategory.MASTER,
+                            16,
+                            sound.pitch()
+                    );
         }
     }
 }

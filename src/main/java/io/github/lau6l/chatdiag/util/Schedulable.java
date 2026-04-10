@@ -13,7 +13,7 @@ import java.util.concurrent.CompletableFuture;
 public class Schedulable {
     private final Runnable runnable;
     public final long delay;
-    private boolean isCancelled;
+    public boolean isCancelled;
     private final CompletableFuture<Boolean> future;
 
     public Schedulable(Runnable runnable, long delay) {
@@ -27,10 +27,9 @@ public class Schedulable {
      * Runs this task immediately if it hasn't been canceled, and completes its future.
      */
     public void run() {
-        if (!isCancelled) {
+        if (!isCancelled && !future.isDone()) {
             runnable.run();
             future.complete(true);
-            cancel();
         }
     }
 

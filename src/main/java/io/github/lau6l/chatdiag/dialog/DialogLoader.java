@@ -38,7 +38,14 @@ public class DialogLoader {
                         for (Map.Entry<Identifier, Resource> entry : resources.entrySet()) {
                             Dialog dialog = loadDialog(entry.getValue());
                             if (dialog != Dialog.EMPTY) {
-                                dialogs.put(entry.getKey(), dialog);
+                                // turn chatdiag:chatdiag/example.json into chatdiag:example
+                                Identifier id = entry.getKey();
+                                String path = id.getPath().replaceFirst("chatdiag/", "");
+                                String finalPath = path.substring(
+                                        0,
+                                        path.lastIndexOf(".")
+                                );
+                                dialogs.put(Identifier.of(id.getNamespace(), finalPath), dialog);
                             }
                         }
 

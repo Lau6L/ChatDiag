@@ -9,6 +9,8 @@ import org.jspecify.annotations.NonNull;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
+import java.util.function.Function;
 
 /**
  * A full chat dialog definition. Loaded from {@link DialogLoader}.
@@ -29,20 +31,29 @@ import java.util.List;
  * @see DialogLoader
  * @see DialogExecutor
  */
-public record Dialog (List<Either<String, DialogLine>> lines, int delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound, @Nullable Identifier nextDialog) {
+public record Dialog (List<Either<String, DialogLine>> lines, float delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound, @Nullable Identifier nextDialog) {
     /** An empty dialog used when data loading fails. */
-    public static final Dialog EMPTY = new Dialog(List.of(), 1, null, null, null, null);
+    public static final Dialog EMPTY = new Dialog(List.of(), 1, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 
     public static final Codec<Dialog> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
                     Codec.either(Codec.STRING, DialogLine.CODEC).listOf().fieldOf("lines").forGetter(Dialog::lines),
-                    Codec.INT.optionalFieldOf("delay_multiplier", 1).forGetter(Dialog::delayMultiplier),
-                    Codec.STRING.optionalFieldOf("prefix", null).forGetter(Dialog::prefix),
-                    Codec.STRING.optionalFieldOf("suffix", null).forGetter(Dialog::suffix),
-                    Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound", null).forGetter(Dialog::sound),
-                    Identifier.CODEC.optionalFieldOf("next_dialog", null).forGetter(Dialog::nextDialog)
+                    Codec.FLOAT.optionalFieldOf("delay_multiplier", 1f).forGetter(Dialog::delayMultiplier),
+                    Codec.STRING.optionalFieldOf("prefix").forGetter(opt(Dialog::prefix)),
+                    Codec.STRING.optionalFieldOf("suffix").forGetter(opt(Dialog::suffix)),
+                    Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(Dialog::sound)),
+                    Identifier.CODEC.optionalFieldOf("next_dialog").forGetter(opt(Dialog::nextDialog))
             ).apply(instance, Dialog::new)
     );
+
+    public static <O, A> Function<O, Optional<A>> opt(Function<O, A> nonOptionalGetter) {
+        return nonOptionalGetter.andThen(Optional::ofNullable);
+    }
+    // this optional constructor and the use of opt() are here to simplify dialog structure to be nullable and digestible by the codec
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public Dialog(List<Either<String, DialogLine>> lines, float delayMultiplier, Optional<String> prefix, Optional<String> suffix, Optional<List<Sound>> sound, Optional<Identifier> nextDialog) {
+        this(lines, delayMultiplier, prefix.orElse(null), suffix.orElse(null), sound.orElse(null), nextDialog.orElse(null));
+    }
 
     /**
      * Returns a given string, or an empty string if the value is {@code null}.

@@ -6,7 +6,9 @@ import net.minecraft.util.dynamic.Codecs;
 import org.jspecify.annotations.Nullable;
 
 import java.util.List;
+import java.util.Optional;
 
+import static io.github.lau6l.chatdiag.dialog.Dialog.opt;
 import static io.github.lau6l.chatdiag.dialog.Dialog.orBlank;
 
 /**
@@ -23,12 +25,18 @@ public record DialogLine(String line, boolean overridePrefix, boolean overrideSu
                     Codec.BOOL.optionalFieldOf("override_prefix", false).forGetter(DialogLine::overridePrefix),
                     Codec.BOOL.optionalFieldOf("override_suffix", false).forGetter(DialogLine::overrideSuffix),
                     Codec.BOOL.optionalFieldOf("override_sound", false).forGetter(DialogLine::overrideSound),
-                    Codec.STRING.optionalFieldOf("prefix", null).forGetter(DialogLine::prefix),
-                    Codec.STRING.optionalFieldOf("suffix", null).forGetter(DialogLine::suffix),
+                    Codec.STRING.optionalFieldOf("prefix").forGetter(opt(DialogLine::prefix)),
+                    Codec.STRING.optionalFieldOf("suffix").forGetter(opt(DialogLine::suffix)),
                     Codec.INT.optionalFieldOf("delay", -1).forGetter(DialogLine::delay),
-                    Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound", null).forGetter(DialogLine::sound)
+                    Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(DialogLine::sound))
             ).apply(instance, DialogLine::new)
     );
+
+    // this optional constructor and the use of opt() are here to simplify dialog structure to be nullable and digestible by the codec
+    @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
+    public DialogLine(String line, boolean overridePrefix, boolean overrideSuffix, boolean overrideSound, Optional<String> prefix, Optional<String> suffix, int delay, Optional<List<Sound>> sound) {
+        this(line, overridePrefix, overrideSuffix, overrideSound, prefix.orElse(null), suffix.orElse(null), delay, sound.orElse(null));
+    }
 
     /**
      * Returns this dialog line text, applying overrides to its parent dialog's prefix and suffix.
@@ -38,9 +46,9 @@ public record DialogLine(String line, boolean overridePrefix, boolean overrideSu
      * @return the rendered line text
      */
     public String get(@Nullable String prefix, @Nullable String suffix) {
-        return (overridePrefix ? orBlank(prefix) : "")
+        return (overridePrefix ? "" : orBlank(prefix))
                 + get()
-                + (overrideSuffix ? orBlank(suffix) : "");
+                + (overrideSuffix ? "" : orBlank(suffix));
     }
 
     private String get() {
