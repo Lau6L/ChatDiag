@@ -20,7 +20,7 @@
   "license": "MIT",
   "icon": "assets/chatdiag/icon.png",
 
-  "environment": "server",
+  "environment": "*",
   "entrypoints": {
     "main": [ "io.github.lau6l.chatdiag.ChatDiag" ]
   },
