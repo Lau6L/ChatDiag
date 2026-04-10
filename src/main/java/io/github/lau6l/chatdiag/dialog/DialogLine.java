@@ -38,6 +38,14 @@ public record DialogLine(String line, boolean overridePrefix, boolean overrideSu
         this(line, overridePrefix, overrideSuffix, overrideSound, prefix.orElse(null), suffix.orElse(null), delay, sound.orElse(null));
     }
 
+    public DialogLine(String line, @Nullable List<Sound> sound) {
+        this(line, false, false, false, null, null, -1, sound);
+    }
+
+    public DialogLine(String line) {
+        this(line, false, false, false, null, null, -1, (List<Sound>) null);
+    }
+
     /**
      * Returns this dialog line text, applying overrides to its parent dialog's prefix and suffix.
      *

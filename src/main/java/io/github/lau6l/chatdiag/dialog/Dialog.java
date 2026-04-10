@@ -33,7 +33,7 @@ import java.util.function.Function;
  */
 public record Dialog (List<Either<String, DialogLine>> lines, double delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound, @Nullable Identifier nextDialog) {
     /** An empty dialog used when data loading fails. */
-    public static final Dialog EMPTY = new Dialog(List.of(), 1, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
+    public static final Dialog EMPTY = new Dialog(List.of(), 1, (String) null, null, null, null);
 
     public static final Codec<Dialog> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(

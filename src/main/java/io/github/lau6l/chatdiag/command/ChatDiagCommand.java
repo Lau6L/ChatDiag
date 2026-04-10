@@ -13,10 +13,13 @@ import io.github.lau6l.chatdiag.dialog.*;
 import net.minecraft.command.argument.EntityArgumentType;
 import net.minecraft.command.argument.IdentifierArgumentType;
 import net.minecraft.command.argument.MessageArgumentType;
+import net.minecraft.command.argument.Vec3ArgumentType;
 import net.minecraft.command.suggestion.SuggestionProviders;
 import net.minecraft.server.command.CommandManager;
 import net.minecraft.server.command.ServerCommandSource;
+import net.minecraft.server.network.ServerPlayerEntity;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.CompletableFuture;
 
@@ -57,41 +60,62 @@ public class ChatDiagCommand {
         return CommandManager.literal("line")
                 .then(
                         CommandManager.argument("line", MessageArgumentType.message())
+                                .executes(context -> execute(
+                                        EntityArgumentType.getPlayers(context, "players"),
+                                        MessageArgumentType.getMessage(context, "line").getString(),
+                                        null
+                                ))
                                 .then(
                                         CommandManager.argument("sound", IdentifierArgumentType.identifier())
                                                 .suggests(SuggestionProviders.cast(SuggestionProviders.AVAILABLE_SOUNDS))
+                                                .executes(context -> execute(
+                                                        EntityArgumentType.getPlayers(context, "players"),
+                                                        MessageArgumentType.getMessage(context, "line").getString(),
+                                                        List.of(new Sound(
+                                                                IdentifierArgumentType.getIdentifier(context, "sound")
+                                                        ))
+                                                ))
                                                 .then(
                                                         CommandManager.argument("pitch", FloatArgumentType.floatArg(0, 2))
-                                                                .executes(context -> {
-                                                                    try {
-                                                                        DialogExecutor.sendLine(
-                                                                                new DialogLine(
+                                                                .executes(context -> execute(
+                                                                        EntityArgumentType.getPlayers(context, "players"),
+                                                                        MessageArgumentType.getMessage(context, "line").getString(),
+                                                                        List.of(new Sound(
+                                                                                IdentifierArgumentType.getIdentifier(context, "sound"),
+                                                                                FloatArgumentType.getFloat(context, "pitch")
+                                                                        ))
+                                                                ))
+                                                                .then(
+                                                                        CommandManager.argument("position", Vec3ArgumentType.vec3())
+                                                                                .executes(context -> execute(
+                                                                                        EntityArgumentType.getPlayers(context, "players"),
                                                                                         MessageArgumentType.getMessage(context, "line").getString(),
-                                                                                        false,
-                                                                                        false,
-                                                                                        false,
-                                                                                        null,
-                                                                                        null,
-                                                                                        -1,
                                                                                         List.of(new Sound(
                                                                                                 IdentifierArgumentType.getIdentifier(context, "sound"),
-                                                                                                FloatArgumentType.getFloat(context, "pitch")
+                                                                                                FloatArgumentType.getFloat(context, "pitch"),
+                                                                                                Vec3ArgumentType.getVec3(context, "position")
                                                                                         ))
-                                                                                ),
-                                                                                EntityArgumentType.getPlayers(context, "players"),
-                                                                                null,
-                                                                                null,
-                                                                                null
-                                                                        );
-                                                                        return 1;
-                                                                    } catch (Exception e) {
-                                                                        ChatDiag.LOGGER.error("Error executing created dialog:", e);
-                                                                        throw e;
-                                                                    }
-                                                                })
+                                                                                ))
+                                                                )
                                                 )
                                 )
                 );
+    }
+
+    private static int execute(Collection<ServerPlayerEntity> players, String line, List<Sound> sound) {
+        try {
+            DialogExecutor.sendLine(
+                    new DialogLine(
+                            line,
+                            sound
+                    ),
+                    players
+            );
+            return 1;
+        } catch (Exception e) {
+            ChatDiag.LOGGER.error("Error executing created dialog:", e);
+            throw e;
+        }
     }
 
     public static class DialogSuggestionProvider implements SuggestionProvider<ServerCommandSource> {

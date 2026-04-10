@@ -7,6 +7,7 @@ import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -176,12 +177,23 @@ public class DialogExecutor {
         }
     }
 
+    /**
+     * Sends a single line to the given players, as a {@code DialogLine}.
+     *
+     * @param line the dialog line to send
+     * @param players the target players
+     */
+    public static void sendLine(DialogLine line, Collection<ServerPlayerEntity> players) {
+        sendLine(line, players, null, null, null);
+    }
+
     private static void playSounds(ServerPlayerEntity player, List<Sound> sounds) {
         for (Sound sound : sounds) {
+            Vec3d pos = sound.position() == null ? player.getEntityPos() : sound.position();
             player.getEntityWorld()
                     .playSound(
                             null,
-                            player.getX(), player.getY(), player.getZ(),
+                            pos.x, pos.y, pos.z,
                             SoundEvent.of(sound.id()),
                             SoundCategory.MASTER,
                             16,
