@@ -23,11 +23,11 @@ import java.util.concurrent.CompletableFuture;
  */
 public class DialogExecutor {
     /**
-     * Constant representing a base delay between lines.
-     * As a reference, when a {@link Dialog#delayMultiplier}'s is
-     * 1, this normalizes each line to 80 Words Per Minute.
+     * Constant representing the delay for a single word.
+     * When a dialog's {@link Dialog#delayMultiplier delayMultiplier} is 1,
+     * this renders each line at 120 Words Per Minute.
      */
-    public static final float BASE_DELAY = 15;
+    public static final int BASE_DELAY = 10;
 
     /**
      * Minimum tick delay between lines. Equivalent to 2.5 seconds.

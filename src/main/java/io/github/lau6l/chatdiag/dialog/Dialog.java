@@ -31,14 +31,14 @@ import java.util.function.Function;
  * @see DialogLoader
  * @see DialogExecutor
  */
-public record Dialog (List<Either<String, DialogLine>> lines, float delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound, @Nullable Identifier nextDialog) {
+public record Dialog (List<Either<String, DialogLine>> lines, double delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound, @Nullable Identifier nextDialog) {
     /** An empty dialog used when data loading fails. */
     public static final Dialog EMPTY = new Dialog(List.of(), 1, Optional.empty(), Optional.empty(), Optional.empty(), Optional.empty());
 
     public static final Codec<Dialog> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
                     Codec.either(Codec.STRING, DialogLine.CODEC).listOf().fieldOf("lines").forGetter(Dialog::lines),
-                    Codec.FLOAT.optionalFieldOf("delay_multiplier", 1f).forGetter(Dialog::delayMultiplier),
+                    Codec.DOUBLE.optionalFieldOf("delay_multiplier", 1.0).forGetter(Dialog::delayMultiplier),
                     Codec.STRING.optionalFieldOf("prefix").forGetter(opt(Dialog::prefix)),
                     Codec.STRING.optionalFieldOf("suffix").forGetter(opt(Dialog::suffix)),
                     Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(Dialog::sound)),
@@ -51,7 +51,7 @@ public record Dialog (List<Either<String, DialogLine>> lines, float delayMultipl
     }
     // this optional constructor and the use of opt() are here to simplify dialog structure to be nullable and digestible by the codec
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public Dialog(List<Either<String, DialogLine>> lines, float delayMultiplier, Optional<String> prefix, Optional<String> suffix, Optional<List<Sound>> sound, Optional<Identifier> nextDialog) {
+    public Dialog(List<Either<String, DialogLine>> lines, double delayMultiplier, Optional<String> prefix, Optional<String> suffix, Optional<List<Sound>> sound, Optional<Identifier> nextDialog) {
         this(lines, delayMultiplier, prefix.orElse(null), suffix.orElse(null), sound.orElse(null), nextDialog.orElse(null));
     }
 
