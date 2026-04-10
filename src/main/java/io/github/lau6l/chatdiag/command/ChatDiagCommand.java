@@ -97,7 +97,7 @@ public class ChatDiagCommand {
     public static class DialogSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
-            Dialogs.getDialogs().forEach((d) -> builder.suggest(d.toString()));
+            Dialogs.getDialogIds().forEach((d) -> builder.suggest(d.toString()));
             return builder.buildFuture();
         }
     }

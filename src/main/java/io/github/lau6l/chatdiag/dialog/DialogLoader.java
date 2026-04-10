@@ -3,14 +3,17 @@ package io.github.lau6l.chatdiag.dialog;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import io.github.lau6l.chatdiag.ChatDiag;
-import net.fabricmc.loader.api.FabricLoader;
+import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
+import net.fabricmc.fabric.api.resource.v1.reloader.SimpleResourceReloader;
+import net.minecraft.resource.Resource;
+import net.minecraft.resource.ResourceManager;
+import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
+import org.jspecify.annotations.NonNull;
 
-import java.io.BufferedReader;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.nio.file.Files;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.stream.Collectors;
 
 /**
@@ -19,29 +22,48 @@ import java.util.stream.Collectors;
  * All stored dialogs must be inside the /data/[namespace]/chatdiag/ directory.
  */
 public class DialogLoader {
-    /**
-     * Loads a dialog JSON file from its {@link Identifier}.
-     *
-     * @param id the dialog identifier
-     * @return the loaded dialog, or {@link Dialog#EMPTY} if loading fails
-     */
-    public static Dialog loadDialog(Identifier id) {
-        String file = String.join("/","data", id.getNamespace(), "chatdiag", id.getPath() + ".json");
-        try (InputStream in = Files.newInputStream(
-                FabricLoader
-                        .getInstance()
-                        .getModContainer(id.getNamespace())
-                        .get()
-                        .findPath(file)
-                        .get()
-        )) {
-            BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-            String json = reader.lines().collect(Collectors.joining());
+    public static void registerReloadListener() {
+        ResourceLoader.get(ResourceType.SERVER_DATA).registerReloader(
+                ChatDiag.of("chat_dialogs"),
+                new SimpleResourceReloader<Map<Identifier, Dialog>>() {
+                    @Override
+                    protected @NonNull Map<Identifier, Dialog> prepare(@NonNull Store store) {
+                        Map<Identifier, Dialog> dialogs = new HashMap<>();
+                        ResourceManager resourceManager = store.getResourceManager();
+
+                        Map<Identifier, Resource> resources = resourceManager.findResources(
+                                "chatdiag",
+                                id -> id.getPath().endsWith(".json")
+                        );
+                        for (Map.Entry<Identifier, Resource> entry : resources.entrySet()) {
+                            Dialog dialog = loadDialog(entry.getValue());
+                            if (dialog != Dialog.EMPTY) {
+                                dialogs.put(entry.getKey(), dialog);
+                            }
+                        }
+
+                        return dialogs;
+                    }
+
+                    @Override
+                    protected void apply(@NonNull Map<Identifier, Dialog> prepared, @NonNull Store store) {
+                        Dialogs.setDialogs(prepared);
+                    }
+                }
+        );
+    }
+
+    private static Dialog loadDialog(Resource resource) {
+        try {
+            String json = resource
+                    .getReader()
+                    .lines()
+                    .collect(Collectors.joining());
             return deserializeDialog(json);
         } catch (IOException e) {
             ChatDiag.LOGGER.error("Error loading dialog:", e);
+            return Dialog.EMPTY;
         }
-        return Dialog.EMPTY;
     }
 
     /**

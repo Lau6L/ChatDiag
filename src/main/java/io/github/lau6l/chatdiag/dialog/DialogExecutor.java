@@ -44,7 +44,7 @@ public class DialogExecutor {
      * @return the resulting dialog's future
      */
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players) {
-        return startDialog(DialogLoader.loadDialog(id), players);
+        return startDialog(Dialogs.getDialog(id), players);
     }
 
     /**
@@ -70,7 +70,7 @@ public class DialogExecutor {
      * @return the resulting dialog's future
      */
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(Identifier id, Collection<ServerPlayerEntity> players, CompletableFuture<Collection<ServerPlayerEntity>> future) {
-        return startDialogWithFuture(DialogLoader.loadDialog(id), players, future);
+        return startDialogWithFuture(Dialogs.getDialog(id), players, future);
     }
 
     /**

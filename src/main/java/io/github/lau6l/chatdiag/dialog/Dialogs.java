@@ -1,30 +1,24 @@
 package io.github.lau6l.chatdiag.dialog;
 
-import io.github.lau6l.chatdiag.ChatDiag;
 import net.minecraft.util.Identifier;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
+import java.util.Set;
 
 /**
- * Collection of dialog identifiers. Registry-like.
- * <p>
- * Dialogs are collected during startup and frozen on server start.
+ * Collection of dialog identifiers.
  */
 public class Dialogs {
-    private static List<Identifier> dialogs = new ArrayList<>();
+    public static Map<Identifier, Dialog> dialogs;
 
-    private static Identifier register(String value) {
-        return register(ChatDiag.of(value));
+    public static Set<Identifier> getDialogIds() {
+        return dialogs.keySet();
     }
-    public static Identifier register(Identifier id) {
-        dialogs.add(id);
-        return id;
+    public static Dialog getDialog(Identifier id) {
+        return dialogs.get(id);
     }
-    public static void freeze() {
-        dialogs = List.copyOf(dialogs);
-    }
-    public static List<Identifier> getDialogs() {
-        return dialogs;
+
+    public static void setDialogs(Map<Identifier, Dialog> newDialogs) {
+        dialogs = newDialogs;
     }
 }
