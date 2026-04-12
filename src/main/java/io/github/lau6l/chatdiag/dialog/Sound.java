@@ -4,8 +4,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.math.Vec3d;
+import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
 
 import java.util.Optional;
 
@@ -41,7 +41,7 @@ public record Sound(Identifier id, float pitch, @Nullable Vec3d position) {
     }
 
     @Override
-    public @NonNull String toString() {
+    public @NotNull String toString() {
         return "Sound{" +
                 "id='" + id + '\'' +
                 ", pitch=" + pitch +

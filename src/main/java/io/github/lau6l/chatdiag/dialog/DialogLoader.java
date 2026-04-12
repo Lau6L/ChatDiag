@@ -9,7 +9,7 @@ import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
 import net.minecraft.util.Identifier;
-import org.jspecify.annotations.NonNull;
+import org.jetbrains.annotations.NotNull;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,7 +27,7 @@ public class DialogLoader {
                 ChatDiag.of("chat_dialogs"),
                 new SimpleResourceReloader<Map<Identifier, Dialog>>() {
                     @Override
-                    protected @NonNull Map<Identifier, Dialog> prepare(@NonNull Store store) {
+                    protected @NotNull Map<Identifier, Dialog> prepare(@NotNull Store store) {
                         Map<Identifier, Dialog> dialogs = new HashMap<>();
                         ResourceManager resourceManager = store.getResourceManager();
 
@@ -53,7 +53,7 @@ public class DialogLoader {
                     }
 
                     @Override
-                    protected void apply(@NonNull Map<Identifier, Dialog> prepared, @NonNull Store store) {
+                    protected void apply(@NotNull Map<Identifier, Dialog> prepared, @NotNull Store store) {
                         Dialogs.setDialogs(prepared);
                     }
                 }

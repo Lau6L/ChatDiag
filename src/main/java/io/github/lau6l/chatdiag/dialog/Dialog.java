@@ -5,8 +5,8 @@ import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
-import org.jspecify.annotations.NonNull;
-import org.jspecify.annotations.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
@@ -61,7 +61,7 @@ public record Dialog (List<Either<String, DialogLine>> lines, double delayMultip
      * @param string the string to check
      * @return the original string, or {@code ""}
      */
-    public static @NonNull String orBlank(@Nullable String string) {
+    public static @NotNull String orBlank(@Nullable String string) {
         return string == null ? "" : string;
     }
 
@@ -115,7 +115,7 @@ public record Dialog (List<Either<String, DialogLine>> lines, double delayMultip
     }
 
     @Override
-    public @NonNull String toString() {
+    public @NotNull String toString() {
         return "Dialog{" +
                 "lines=" + lines +
                 ", delayMultiplier=" + delayMultiplier +
