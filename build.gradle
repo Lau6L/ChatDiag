@@ -19,24 +19,38 @@ repositories {
     // for more information about repositories.
 }
 
+
+// versioned building
+
+def buildProfile = providers.gradleProperty("build_profile").orElse("1.21.11").get()
+def versionFile = file("version/${buildProfile}.properties")
+
+def buildVersion = new Properties()
+versionFile.withInputStream { buildVersion.load(it) }
+
+def minecraftVersion = buildVersion.getProperty("minecraft_version")
+def yarnMappings = buildVersion.getProperty("yarn_mappings")
+def fabricApiVersion = buildVersion.getProperty("fabric_api_version")
+
+
 dependencies {
     // To change the versions see the gradle.properties file
-    minecraft "com.mojang:minecraft:${project.minecraft_version}"
-    mappings "net.fabricmc:yarn:${project.yarn_mappings}:v2"
+    minecraft "com.mojang:minecraft:${minecraftVersion}"
+    mappings "net.fabricmc:yarn:${yarnMappings}:v2"
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
-    modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+    modImplementation "net.fabricmc.fabric-api:fabric-api:${fabricApiVersion}"
 }
 
 processResources {
     inputs.property "version", project.version
-    inputs.property "minecraft_version", project.minecraft_version
+    inputs.property "minecraft_version", minecraftVersion
     inputs.property "loader_version", project.loader_version
     filteringCharset "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand "version": project.version,
-                "minecraft_version": project.minecraft_version,
+                "minecraft_version": minecraftVersion,
                 "loader_version": project.loader_version
     }
 }
@@ -66,8 +80,14 @@ java {
 
 jar {
     from("LICENSE") {
-        rename { "${it}_${project.archives_base_name}" }
+        rename { "${it}_${project.archives_base_name}"}
     }
+
+    archiveVersion.set("${version}+${minecraftVersion}")
+}
+
+tasks.remapJar {
+    archiveVersion.set("${version}+${minecraftVersion}")
 }
 
 // configure the maven publication
