@@ -3,7 +3,17 @@ plugins {
     id 'maven-publish'
 }
 
-version = project.mod_version
+def buildProfile = providers.gradleProperty("build_profile").orElse("").get()
+def versionFile = file("version/${buildProfile}.properties")
+
+def buildVersion = new Properties()
+versionFile.withInputStream { buildVersion.load(it) }
+
+def minecraftVersion = buildVersion.getProperty("minecraft_version")
+def yarnMappings = buildVersion.getProperty("yarn_mappings")
+def fabricApiVersion = buildVersion.getProperty("fabric_api_version")
+
+version = "${project.mod_version}+${minecraftVersion}"
 group = project.maven_group
 
 base {
@@ -18,20 +28,6 @@ repositories {
     // See https://docs.gradle.org/current/userguide/declaring_repositories.html
     // for more information about repositories.
 }
-
-
-// versioned building
-
-def buildProfile = providers.gradleProperty("build_profile").orElse("1.21.11").get()
-def versionFile = file("version/${buildProfile}.properties")
-
-def buildVersion = new Properties()
-versionFile.withInputStream { buildVersion.load(it) }
-
-def minecraftVersion = buildVersion.getProperty("minecraft_version")
-def yarnMappings = buildVersion.getProperty("yarn_mappings")
-def fabricApiVersion = buildVersion.getProperty("fabric_api_version")
-
 
 dependencies {
     // To change the versions see the gradle.properties file
@@ -88,6 +84,26 @@ jar {
 
 tasks.remapJar {
     archiveVersion.set("${version}+${minecraftVersion}")
+}
+
+// as hacky as can be
+tasks.register("buildAll", Exec) {
+    def commands = ""
+    file("version")
+            .listFiles()
+            .findAll()
+            .each { file ->
+                def profile = file.name.replace(".properties", "")
+
+                commands += "gradlew build -Pbuild_profile=${profile} | "
+    }
+
+    commands = commands.substring(0, commands.length() - 3)
+    println(commands)
+    commands = commands.split(" ")
+    def line = ['cmd', 'cmd', '/c', 'start'] as List<String>
+    line.addAll(commands)
+    commandLine line
 }
 
 // configure the maven publication
