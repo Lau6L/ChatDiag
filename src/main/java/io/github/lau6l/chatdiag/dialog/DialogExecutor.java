@@ -189,8 +189,8 @@ public class DialogExecutor {
 
     private static void playSounds(ServerPlayerEntity player, List<Sound> sounds) {
         for (Sound sound : sounds) {
-            Vec3d pos = sound.position() == null ? player.getEntityPos() : sound.position();
-            player.getEntityWorld()
+            Vec3d pos = sound.position() == null ? player.getPos() : sound.position();
+            player.getWorld()
                     .playSound(
                             null,
                             pos.x, pos.y, pos.z,

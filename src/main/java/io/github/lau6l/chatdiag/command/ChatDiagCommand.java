@@ -20,7 +20,7 @@ public class ChatDiagCommand {
     public static void register(CommandDispatcher<ServerCommandSource> dispatcher) {
         LiteralCommandNode<ServerCommandSource> literalCommandNode = dispatcher.register(
                 CommandManager.literal("chatdiag")
-                        .requires(CommandManager.requirePermissionLevel(CommandManager.GAMEMASTERS_CHECK))
+                        .requires(CommandManager.requirePermissionLevel(1))
                         .then(
                                 CommandManager.argument("players", EntityArgumentType.players())
                                         .then(getIdDialogBranch())

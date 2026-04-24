@@ -3,13 +3,14 @@ package io.github.lau6l.chatdiag.dialog;
 import com.google.gson.JsonParser;
 import com.mojang.serialization.JsonOps;
 import io.github.lau6l.chatdiag.ChatDiag;
-import net.fabricmc.fabric.api.resource.v1.ResourceLoader;
-import net.fabricmc.fabric.api.resource.v1.reloader.SimpleResourceReloader;
+import net.fabricmc.fabric.api.resource.IdentifiableResourceReloadListener;
+import net.fabricmc.fabric.api.resource.ResourceManagerHelper;
 import net.minecraft.resource.Resource;
 import net.minecraft.resource.ResourceManager;
 import net.minecraft.resource.ResourceType;
+import net.minecraft.resource.SinglePreparationResourceReloader;
 import net.minecraft.util.Identifier;
-import org.jetbrains.annotations.NotNull;
+import net.minecraft.util.profiler.Profiler;
 
 import java.io.IOException;
 import java.util.HashMap;
@@ -27,41 +28,52 @@ public class DialogLoader {
      * Registers a listener that processes dialog definitions from {@code /chatdiag/} data.
      */
     public static void registerReloadListener() {
-        ResourceLoader.get(ResourceType.SERVER_DATA).registerReloader(
-                ChatDiag.of("chat_dialogs"),
-                new SimpleResourceReloader<Map<Identifier, Dialog>>() {
-                    @Override
-                    protected @NotNull Map<Identifier, Dialog> prepare(@NotNull Store store) {
-                        Map<Identifier, Dialog> dialogs = new HashMap<>();
-                        ResourceManager resourceManager = store.getResourceManager();
-
-                        Map<Identifier, Resource> resources = resourceManager.findResources(
-                                "chatdiag",
-                                id -> id.getPath().endsWith(".json")
-                        );
-                        for (Map.Entry<Identifier, Resource> entry : resources.entrySet()) {
-                            Dialog dialog = loadDialog(entry.getValue());
-                            if (dialog != Dialog.EMPTY) {
-                                // turn namespace:chatdiag/file.json into namespace:file
-                                Identifier id = entry.getKey();
-                                String path = id.getPath().replaceFirst("chatdiag/", "");
-                                String finalPath = path.substring(
-                                        0,
-                                        path.lastIndexOf(".")
-                                );
-                                dialogs.put(Identifier.of(id.getNamespace(), finalPath), dialog);
-                            }
-                        }
-
-                        return dialogs;
-                    }
-
-                    @Override
-                    protected void apply(@NotNull Map<Identifier, Dialog> prepared, @NotNull Store store) {
-                        Dialogs.setDialogs(prepared);
-                    }
-                }
+        ResourceManagerHelper.get(ResourceType.SERVER_DATA).registerReloadListener(
+                DialogReloader.ID,
+                (t) -> new DialogReloader()
         );
+    }
+
+    public static final class DialogReloader extends SinglePreparationResourceReloader<Map<Identifier, Dialog>> implements IdentifiableResourceReloadListener {
+        public static Identifier ID = ChatDiag.of("chat_dialogs");
+
+        public DialogReloader() {
+        }
+
+        @Override
+        protected Map<Identifier, Dialog> prepare(ResourceManager manager, Profiler profiler) {
+            Map<Identifier, Dialog> dialogs = new HashMap<>();
+
+            Map<Identifier, Resource> resources = manager.findResources(
+                    "chatdiag",
+                    id -> id.getPath().endsWith(".json")
+            );
+            for (Map.Entry<Identifier, Resource> entry : resources.entrySet()) {
+                Dialog dialog = loadDialog(entry.getValue());
+                if (dialog != Dialog.EMPTY) {
+                    // turn namespace:chatdiag/file.json into namespace:file
+                    Identifier id = entry.getKey();
+                    String path = id.getPath().replaceFirst("chatdiag/", "");
+                    String finalPath = path.substring(
+                            0,
+                            path.lastIndexOf(".")
+                    );
+                    dialogs.put(Identifier.of(id.getNamespace(), finalPath), dialog);
+                }
+            }
+
+            return dialogs;
+        }
+
+        @Override
+        protected void apply(Map<Identifier, Dialog> prepared, ResourceManager manager, Profiler profiler) {
+            Dialogs.setDialogs(prepared);
+        }
+
+        @Override
+        public Identifier getFabricId() {
+            return ID;
+        }
     }
 
     /**
