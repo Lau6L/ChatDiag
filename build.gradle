@@ -101,7 +101,7 @@ tasks.register("buildAll", Exec) {
     commands = commands.substring(0, commands.length() - 3)
     println(commands)
     commands = commands.split(" ")
-    def line = ['cmd', 'cmd', '/c', 'start'] as List<String>
+    def line = ['cmd', 'cmd', '/c'] as List<String>
     line.addAll(commands)
     commandLine line
 }
