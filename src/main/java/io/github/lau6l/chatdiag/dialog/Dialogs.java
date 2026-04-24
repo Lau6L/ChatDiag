@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 
 /**
- * Collection of dialog identifiers.
+ * Collection of all loaded dialogs.
  */
 public class Dialogs {
     public static Map<Identifier, Dialog> dialogs;

@@ -22,6 +22,10 @@ import java.util.stream.Collectors;
  * All stored dialogs must be inside the /data/[namespace]/chatdiag/ directory.
  */
 public class DialogLoader {
+
+    /**
+     * Registers a listener that processes dialog definitions from {@code /chatdiag/} data.
+     */
     public static void registerReloadListener() {
         ResourceLoader.get(ResourceType.SERVER_DATA).registerReloader(
                 ChatDiag.of("chat_dialogs"),
@@ -38,7 +42,7 @@ public class DialogLoader {
                         for (Map.Entry<Identifier, Resource> entry : resources.entrySet()) {
                             Dialog dialog = loadDialog(entry.getValue());
                             if (dialog != Dialog.EMPTY) {
-                                // turn chatdiag:chatdiag/example.json into chatdiag:example
+                                // turn namespace:chatdiag/file.json into namespace:file
                                 Identifier id = entry.getKey();
                                 String path = id.getPath().replaceFirst("chatdiag/", "");
                                 String finalPath = path.substring(
@@ -60,6 +64,12 @@ public class DialogLoader {
         );
     }
 
+    /**
+     * Reads a resource and returns the contents as a {@link Dialog}.
+     *
+     * @param resource the resource to load
+     * @return a new {@code Dialog}
+     */
     private static Dialog loadDialog(Resource resource) {
         try {
             String json = resource

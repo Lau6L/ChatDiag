@@ -32,14 +32,6 @@ public record Sound(Identifier id, float pitch, @Nullable Vec3d position) {
         this(id, pitch, (Vec3d) null);
     }
 
-    public Sound(Identifier id, float pitch) {
-        this(id, pitch, (Vec3d) null);
-    }
-
-    public Sound(Identifier id) {
-        this(id, 1, (Vec3d) null);
-    }
-
     @Override
     public @NotNull String toString() {
         return "Sound{" +
