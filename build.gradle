@@ -1,9 +1,9 @@
 plugins {
-    id 'fabric-loom' version '1.14.1'
+    id 'fabric-loom' version '1.16-SNAPSHOT'
     id 'maven-publish'
 }
 
-def buildProfile = providers.gradleProperty("build_profile").orElse("").get()
+def buildProfile = providers.gradleProperty("build_profile").orElse("1.21.11").get()
 def versionFile = file("version/${buildProfile}.properties")
 
 def buildVersion = new Properties()
@@ -42,7 +42,7 @@ processResources {
     inputs.property "version", project.version
     inputs.property "minecraft_version", minecraftVersion
     inputs.property "loader_version", project.loader_version
-    filteringCharset "UTF-8"
+    filteringCharset = "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand "version": project.version,
