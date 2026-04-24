@@ -3,7 +3,7 @@ plugins {
     id 'maven-publish'
 }
 
-def buildProfile = providers.gradleProperty("build_profile").orElse("1.21.8").get()
+def buildProfile = providers.gradleProperty("build_profile").orElse("1.21.5").get()
 def versionFile = file("version/${buildProfile}.properties")
 
 def buildVersion = new Properties()
