@@ -18,13 +18,13 @@ import static io.github.lau6l.chatdiag.dialog.Dialog.orBlank;
  *
  * @see Dialog
  */
-public record DialogLine(String line, boolean overridePrefix, boolean overrideSuffix, boolean overrideSound, @Nullable String prefix, @Nullable String suffix, int delay, @Nullable List<Sound> sound) {
+public record DialogLine(String line, boolean replacePrefix, boolean replaceSuffix, boolean replaceSound, @Nullable String prefix, @Nullable String suffix, int delay, @Nullable List<Sound> sound) {
     public static final Codec<DialogLine> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
                     Codec.STRING.fieldOf("line").forGetter(DialogLine::line),
-                    Codec.BOOL.optionalFieldOf("override_prefix", false).forGetter(DialogLine::overridePrefix),
-                    Codec.BOOL.optionalFieldOf("override_suffix", false).forGetter(DialogLine::overrideSuffix),
-                    Codec.BOOL.optionalFieldOf("override_sound", false).forGetter(DialogLine::overrideSound),
+                    Codec.BOOL.optionalFieldOf("replace_prefix", false).forGetter(DialogLine::replacePrefix),
+                    Codec.BOOL.optionalFieldOf("replace_suffix", false).forGetter(DialogLine::replaceSuffix),
+                    Codec.BOOL.optionalFieldOf("replace_sound", false).forGetter(DialogLine::replaceSound),
                     Codec.STRING.optionalFieldOf("prefix").forGetter(opt(DialogLine::prefix)),
                     Codec.STRING.optionalFieldOf("suffix").forGetter(opt(DialogLine::suffix)),
                     Codec.INT.optionalFieldOf("delay", -1).forGetter(DialogLine::delay),
@@ -34,8 +34,8 @@ public record DialogLine(String line, boolean overridePrefix, boolean overrideSu
 
     // this optional constructor and the use of opt() are here to simplify dialog structure to be nullable and digestible by the codec
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public DialogLine(String line, boolean overridePrefix, boolean overrideSuffix, boolean overrideSound, Optional<String> prefix, Optional<String> suffix, int delay, Optional<List<Sound>> sound) {
-        this(line, overridePrefix, overrideSuffix, overrideSound, prefix.orElse(null), suffix.orElse(null), delay, sound.orElse(null));
+    public DialogLine(String line, boolean replacePrefix, boolean replaceSuffix, boolean replaceSound, Optional<String> prefix, Optional<String> suffix, int delay, Optional<List<Sound>> sound) {
+        this(line, replacePrefix, replaceSuffix, replaceSound, prefix.orElse(null), suffix.orElse(null), delay, sound.orElse(null));
     }
 
     public DialogLine(String line, @Nullable List<Sound> sound) {
@@ -54,9 +54,9 @@ public record DialogLine(String line, boolean overridePrefix, boolean overrideSu
      * @return the rendered line text
      */
     public String get(@Nullable String prefix, @Nullable String suffix) {
-        return (overridePrefix ? "" : orBlank(prefix))
+        return (replacePrefix ? "" : orBlank(prefix))
                 + get()
-                + (overrideSuffix ? "" : orBlank(suffix));
+                + (replaceSuffix ? "" : orBlank(suffix));
     }
 
     private String get() {

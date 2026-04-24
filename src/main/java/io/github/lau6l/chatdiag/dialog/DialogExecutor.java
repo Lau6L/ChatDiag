@@ -172,7 +172,7 @@ public class DialogExecutor {
 
         for (ServerPlayerEntity player : players) {
             player.sendMessageToClient(Text.of(line.get(prefix, suffix)), false);
-            if (defaultSounds != null && !line.overrideSound()) playSounds(player, defaultSounds);
+            if (defaultSounds != null && !line.replaceSound()) playSounds(player, defaultSounds);
             if (hasSound) playSounds(player, sounds);
         }
     }
