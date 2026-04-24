@@ -78,12 +78,6 @@ jar {
     from("LICENSE") {
         rename { "${it}_${project.archives_base_name}"}
     }
-
-    archiveVersion.set("${version}+${minecraftVersion}")
-}
-
-tasks.remapJar {
-    archiveVersion.set("${version}+${minecraftVersion}")
 }
 
 // as hacky as can be
