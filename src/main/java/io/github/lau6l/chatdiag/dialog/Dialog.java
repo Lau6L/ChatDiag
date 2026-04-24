@@ -3,8 +3,8 @@ package io.github.lau6l.chatdiag.dialog;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.lau6l.chatdiag.util.CodecHelper;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -41,7 +41,7 @@ public record Dialog (List<Either<String, DialogLine>> lines, double delayMultip
                     Codec.DOUBLE.optionalFieldOf("delay_multiplier", 1.0).forGetter(Dialog::delayMultiplier),
                     Codec.STRING.optionalFieldOf("prefix").forGetter(opt(Dialog::prefix)),
                     Codec.STRING.optionalFieldOf("suffix").forGetter(opt(Dialog::suffix)),
-                    Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(Dialog::sound)),
+                    CodecHelper.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(Dialog::sound)),
                     Identifier.CODEC.optionalFieldOf("next_dialog").forGetter(opt(Dialog::nextDialog))
             ).apply(instance, Dialog::new)
     );
