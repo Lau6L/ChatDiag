@@ -96,7 +96,7 @@ public class DialogLoader {
                 .encodeStart(JsonOps.INSTANCE, dialog)
                 .result()
                 .orElseThrow()
-                .getAsString();
+                .toString();
     }
 
     /**
