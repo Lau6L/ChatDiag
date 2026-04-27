@@ -104,7 +104,7 @@ tasks.register("buildAll", Exec) {
 modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     projectId = "chatdiag"
-    versionNumber = project.mod_version
+    versionNumber = "${project.version}"
     uploadFile = remapJar
     gameVersions = [minecraftVersion]
     loaders = ["fabric"]
