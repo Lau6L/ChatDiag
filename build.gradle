@@ -108,6 +108,9 @@ modrinth {
     uploadFile = remapJar
     gameVersions = [minecraftVersion]
     loaders = ["fabric"]
+    dependencies {
+        required.project "fabric-api"
+    }
 }
 
 // configure the maven publication
