@@ -1,6 +1,7 @@
 plugins {
     id 'fabric-loom' version '1.16-SNAPSHOT'
     id 'maven-publish'
+    id "com.modrinth.minotaur" version "2.+"
 }
 
 def buildProfile = providers.gradleProperty("build_profile").orElse("1.21.5").get()
@@ -98,6 +99,15 @@ tasks.register("buildAll", Exec) {
     def line = ['cmd', 'cmd', '/c'] as List<String>
     line.addAll(commands)
     commandLine line
+}
+
+modrinth {
+    token = System.getenv("MODRINTH_TOKEN")
+    projectId = "chatdiag"
+    versionNumber = "${project.version}"
+    uploadFile = remapJar
+    gameVersions = [minecraftVersion]
+    loaders = ["fabric"]
 }
 
 // configure the maven publication
