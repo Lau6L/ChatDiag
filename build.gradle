@@ -90,7 +90,7 @@ tasks.register("buildAll", Exec) {
             .each { file ->
                 def profile = file.name.replace(".properties", "")
 
-                commands += "gradlew build -Pbuild_profile=${profile} | "
+                commands += "gradlew build -Pbuild_profile=${profile} | gradlew modrinth -Pbuild_profile=${profile} | "
     }
 
     commands = commands.substring(0, commands.length() - 3)
