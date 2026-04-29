@@ -2,10 +2,13 @@ package io.github.lau6l.chatdiag;
 
 import io.github.lau6l.chatdiag.api.ChatDiagApi;
 import io.github.lau6l.chatdiag.command.ChatDiagCommand;
+import io.github.lau6l.chatdiag.command.DialogArgumentType;
 import io.github.lau6l.chatdiag.dialog.DialogLoader;
 import io.github.lau6l.chatdiag.util.Scheduler;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.command.v2.ArgumentTypeRegistry;
 import net.fabricmc.fabric.api.command.v2.CommandRegistrationCallback;
+import net.minecraft.command.argument.serialize.ConstantArgumentSerializer;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,6 +24,7 @@ public class ChatDiag implements ModInitializer {
         Scheduler.initialize();
         registerCommands();
         DialogLoader.registerReloadListener();
+        ArgumentTypeRegistry.registerArgumentType(of("dialog"), DialogArgumentType.class, ConstantArgumentSerializer.of(DialogArgumentType::dialog));
     }
 
     private void registerCommands() {

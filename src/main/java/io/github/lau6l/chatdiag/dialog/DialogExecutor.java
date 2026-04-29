@@ -123,8 +123,10 @@ public class DialogExecutor {
         );
 
         int delay = dialog.get(i).map(
-                str -> (int) (Math.max(MIN_DELAY, dialog.words(i) * BASE_DELAY) * dialog.delayMultiplier()),
-                DialogLine::delay
+                str -> getDelay(dialog.words(i), dialog.delayMultiplier()),
+                line -> line.delay() == -1 ?
+                        getDelay(dialog.words(i), dialog.delayMultiplier())
+                        : line.delay()
         );
         new Schedulable(
                 () -> sendDialog(
@@ -140,6 +142,10 @@ public class DialogExecutor {
                     ChatDiag.LOGGER.error("Error executing dialog:", e);
                     return true;
                 });
+    }
+
+    private static int getDelay(int wordCount, double delayMultiplier) {
+        return (int) (Math.max(MIN_DELAY, wordCount * BASE_DELAY) * delayMultiplier);
     }
 
     /**
