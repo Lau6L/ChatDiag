@@ -6,12 +6,7 @@ import com.mojang.brigadier.context.CommandContext;
 import io.github.lau6l.chatdiag.dialog.Dialog;
 import io.github.lau6l.chatdiag.dialog.DialogLoader;
 
-import java.util.Collection;
-import java.util.List;
-
 public class DialogArgumentType implements ArgumentType<Dialog> {
-    private static final Collection<String> EXAMPLES = List.of("{}");
-
     public DialogArgumentType() {
     }
 
@@ -34,10 +29,5 @@ public class DialogArgumentType implements ArgumentType<Dialog> {
             reader.skip();
         }
         return reader.getString().substring(i, reader.getCursor());
-    }
-
-    @Override
-    public Collection<String> getExamples() {
-        return EXAMPLES;
     }
 }
