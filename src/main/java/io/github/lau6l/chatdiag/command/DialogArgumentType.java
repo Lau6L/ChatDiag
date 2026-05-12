@@ -5,6 +5,7 @@ import com.mojang.brigadier.arguments.ArgumentType;
 import com.mojang.brigadier.context.CommandContext;
 import io.github.lau6l.chatdiag.dialog.Dialog;
 import io.github.lau6l.chatdiag.dialog.DialogLoader;
+import net.minecraft.server.command.ServerCommandSource;
 
 public class DialogArgumentType implements ArgumentType<Dialog> {
     public DialogArgumentType() {
@@ -14,8 +15,8 @@ public class DialogArgumentType implements ArgumentType<Dialog> {
         return new DialogArgumentType();
     }
 
-    public static <S> Dialog getDialog(CommandContext<S> context, String name) {
-        return context.getArgument(name, Dialog.class);
+    public static <S> Dialog getDialog(CommandContext<S> context, String name, ServerCommandSource source) {
+        return context.getArgument(name, Dialog.class).withSource(source);
     }
 
     public Dialog parse(StringReader stringReader) {
