@@ -3,6 +3,7 @@ package io.github.lau6l.chatdiag.dialog;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.NotNull;
@@ -67,6 +68,13 @@ public record Dialog (List<Either<String, DialogLine>> lines, double delayMultip
      */
     public static @NotNull String orBlank(@Nullable String string) {
         return string == null ? "" : string;
+    }
+
+    public Dialog withSource(ServerCommandSource source) {
+        if (nextCommand != null) {
+            nextCommand.source(source);
+        }
+        return this;
     }
 
     /**
