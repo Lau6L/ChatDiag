@@ -31,9 +31,9 @@ import java.util.function.Function;
  * @see DialogLoader
  * @see DialogExecutor
  */
-public record Dialog (List<Either<String, DialogLine>> lines, double delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound, @Nullable Identifier nextDialog) {
+public record Dialog (List<Either<String, DialogLine>> lines, double delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound, @Nullable Identifier nextDialog, @Nullable CommandContainer nextCommand) {
     /** An empty dialog used when data loading fails. */
-    public static final Dialog EMPTY = new Dialog(List.of(), 1, (String) null, null, null, null);
+    public static final Dialog EMPTY = new Dialog(List.of(), 1, (String) null, null, null, null, null);
 
     public static final Codec<Dialog> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
@@ -42,7 +42,11 @@ public record Dialog (List<Either<String, DialogLine>> lines, double delayMultip
                     Codec.STRING.optionalFieldOf("prefix").forGetter(opt(Dialog::prefix)),
                     Codec.STRING.optionalFieldOf("suffix").forGetter(opt(Dialog::suffix)),
                     Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(Dialog::sound)),
-                    Identifier.CODEC.optionalFieldOf("next_dialog").forGetter(opt(Dialog::nextDialog))
+                    Identifier.CODEC.optionalFieldOf("next_dialog").forGetter(opt(Dialog::nextDialog)),
+                    Codec.STRING.optionalFieldOf("next_command").forGetter(opt(dialog ->
+                            dialog.nextCommand == null ?
+                                    null
+                                    : dialog.nextCommand.command))
             ).apply(instance, Dialog::new)
     );
 
@@ -51,8 +55,8 @@ public record Dialog (List<Either<String, DialogLine>> lines, double delayMultip
     }
     // this optional constructor and the use of opt() are here to simplify dialog structure to be nullable and digestible by the codec
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public Dialog(List<Either<String, DialogLine>> lines, double delayMultiplier, Optional<String> prefix, Optional<String> suffix, Optional<List<Sound>> sound, Optional<Identifier> nextDialog) {
-        this(lines, delayMultiplier, prefix.orElse(null), suffix.orElse(null), sound.orElse(null), nextDialog.orElse(null));
+    public Dialog(List<Either<String, DialogLine>> lines, double delayMultiplier, Optional<String> prefix, Optional<String> suffix, Optional<List<Sound>> sound, Optional<Identifier> nextDialog, Optional<String> nextCommand) {
+        this(lines, delayMultiplier, prefix.orElse(null), suffix.orElse(null), sound.orElse(null), nextDialog.orElse(null), new CommandContainer(nextCommand.orElse(null)));
     }
 
     /**
