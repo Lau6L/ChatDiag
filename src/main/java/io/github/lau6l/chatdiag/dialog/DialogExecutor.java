@@ -3,6 +3,7 @@ package io.github.lau6l.chatdiag.dialog;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.lau6l.chatdiag.ChatDiag;
 import io.github.lau6l.chatdiag.util.Schedulable;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
 import net.minecraft.sound.SoundEvent;
@@ -46,8 +47,8 @@ public class DialogExecutor {
      * @param players the target players
      * @return the resulting dialog's future
      */
-    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players) {
-        return startDialog(Dialogs.getDialog(id), players);
+    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players, ServerCommandSource source) {
+        return startDialog(Dialogs.get(id, source), players);
     }
 
     /**
@@ -73,7 +74,7 @@ public class DialogExecutor {
      * @return the resulting dialog's future
      */
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(Identifier id, Collection<ServerPlayerEntity> players, CompletableFuture<Collection<ServerPlayerEntity>> future) {
-        return startDialogWithFuture(Dialogs.getDialog(id), players, future);
+        return startDialogWithFuture(Dialogs.get(id), players, future);
     }
 
     /**
@@ -148,12 +149,16 @@ public class DialogExecutor {
 
     private static void executeCommand(Dialog dialog) {
         CommandContainer commandContainer = dialog.nextCommand();
-        if (commandContainer != null) {
-            try {
-                commandContainer.dispatcher().execute(commandContainer.command, commandContainer.source());
-            } catch (CommandSyntaxException e) {
-                ChatDiag.LOGGER.error("There was an error trying to execute dialog command:", e);
-            }
+        if (commandContainer == null) return;
+        try {
+            ServerCommandSource source = commandContainer.source();
+            source.getDispatcher()
+                    .execute(
+                            commandContainer.command,
+                            source
+                    );
+        } catch (CommandSyntaxException e) {
+            ChatDiag.LOGGER.error("There was an error trying to execute dialog command:", e);
         }
     }
 
