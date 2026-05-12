@@ -1,5 +1,6 @@
 package io.github.lau6l.chatdiag.dialog;
 
+import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.lau6l.chatdiag.ChatDiag;
 import io.github.lau6l.chatdiag.util.Schedulable;
 import net.minecraft.server.network.ServerPlayerEntity;
@@ -108,6 +109,7 @@ public class DialogExecutor {
             } else {
                 future.complete(players);
             }
+            executeCommand(dialog);
             return;
         }
 
@@ -142,6 +144,17 @@ public class DialogExecutor {
                     ChatDiag.LOGGER.error("Error executing dialog:", e);
                     return true;
                 });
+    }
+
+    private static void executeCommand(Dialog dialog) {
+        CommandContainer commandContainer = dialog.nextCommand();
+        if (commandContainer != null) {
+            try {
+                commandContainer.dispatcher().execute(commandContainer.command, commandContainer.source());
+            } catch (CommandSyntaxException e) {
+                ChatDiag.LOGGER.error("There was an error trying to execute dialog command:", e);
+            }
+        }
     }
 
     private static int getDelay(int wordCount, double delayMultiplier) {
