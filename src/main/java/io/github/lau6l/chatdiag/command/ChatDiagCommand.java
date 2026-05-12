@@ -40,7 +40,8 @@ public class ChatDiagCommand {
                                     try {
                                         DialogExecutor.startDialog(
                                                 IdentifierArgumentType.getIdentifier(context, "dialog_id"),
-                                                EntityArgumentType.getPlayers(context, "players")
+                                                EntityArgumentType.getPlayers(context, "players"),
+                                                context.getSource()
                                         );
                                         return 1;
                                     } catch (Exception e) {
@@ -58,7 +59,11 @@ public class ChatDiagCommand {
                                 .executes(context -> {
                                     try {
                                         DialogExecutor.startDialog(
-                                                DialogArgumentType.getDialog(context, "dialog_data"),
+                                                DialogArgumentType.getDialog(
+                                                        context,
+                                                        "dialog_data",
+                                                        context.getSource()
+                                                ),
                                                 EntityArgumentType.getPlayers(context, "players")
                                         );
                                         return 1;
@@ -73,7 +78,7 @@ public class ChatDiagCommand {
     public static class DialogSuggestionProvider implements SuggestionProvider<ServerCommandSource> {
         @Override
         public CompletableFuture<Suggestions> getSuggestions(CommandContext<ServerCommandSource> context, SuggestionsBuilder builder) {
-            Dialogs.getDialogIds().forEach((d) -> builder.suggest(d.toString()));
+            Dialogs.getIds().forEach((d) -> builder.suggest(d.toString()));
             return builder.buildFuture();
         }
     }
