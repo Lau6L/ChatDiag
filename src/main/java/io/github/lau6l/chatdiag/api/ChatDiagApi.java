@@ -4,6 +4,7 @@ import io.github.lau6l.chatdiag.dialog.Dialog;
 import io.github.lau6l.chatdiag.dialog.DialogExecutor;
 import io.github.lau6l.chatdiag.dialog.DialogLoader;
 import io.github.lau6l.chatdiag.dialog.Dialogs;
+import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
 
@@ -21,11 +22,11 @@ public class ChatDiagApi {
     }
 
     public Dialog getDialog(Identifier id) {
-        return Dialogs.getDialog(id);
+        return Dialogs.get(id);
     }
 
-    public CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players) {
-        return DialogExecutor.startDialog(id, players);
+    public CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players, ServerCommandSource source) {
+        return DialogExecutor.startDialog(id, players, source);
     }
 
     public CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Dialog dialog, Collection<ServerPlayerEntity> players) {
