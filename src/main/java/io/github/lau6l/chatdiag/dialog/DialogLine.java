@@ -18,7 +18,7 @@ import static io.github.lau6l.chatdiag.dialog.Dialog.orBlank;
  *
  * @see Dialog
  */
-public record DialogLine(String line, boolean replacePrefix, boolean replaceSuffix, boolean replaceSound, @Nullable String prefix, @Nullable String suffix, int delay, @Nullable List<Sound> sound) {
+public record DialogLine(String line, boolean replacePrefix, boolean replaceSuffix, boolean replaceSound, @Nullable String prefix, @Nullable String suffix, int delay, @Nullable List<Sound> sound, @Nullable CommandContainer command) {
     public static final Codec<DialogLine> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
                     Codec.STRING.fieldOf("line").forGetter(DialogLine::line),
@@ -28,14 +28,18 @@ public record DialogLine(String line, boolean replacePrefix, boolean replaceSuff
                     Codec.STRING.optionalFieldOf("prefix").forGetter(opt(DialogLine::prefix)),
                     Codec.STRING.optionalFieldOf("suffix").forGetter(opt(DialogLine::suffix)),
                     Codec.INT.optionalFieldOf("delay", -1).forGetter(DialogLine::delay),
-                    Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(DialogLine::sound))
+                    Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(DialogLine::sound)),
+                    Codec.STRING.optionalFieldOf("command").forGetter(opt(line ->
+                            line.command == null ?
+                                    null
+                                    : line.command.command))
             ).apply(instance, DialogLine::new)
     );
 
     // this optional constructor and the use of opt() are here to simplify dialog structure to be nullable and digestible by the codec
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public DialogLine(String line, boolean replacePrefix, boolean replaceSuffix, boolean replaceSound, Optional<String> prefix, Optional<String> suffix, int delay, Optional<List<Sound>> sound) {
-        this(line, replacePrefix, replaceSuffix, replaceSound, prefix.orElse(null), suffix.orElse(null), delay, sound.orElse(null));
+    public DialogLine(String line, boolean replacePrefix, boolean replaceSuffix, boolean replaceSound, Optional<String> prefix, Optional<String> suffix, int delay, Optional<List<Sound>> sound, Optional<String> command) {
+        this(line, replacePrefix, replaceSuffix, replaceSound, prefix.orElse(null), suffix.orElse(null), delay, sound.orElse(null), new CommandContainer(command.orElse(null)));
     }
     /**
      * Returns this dialog line text, applying overrides to its parent dialog's prefix and suffix.
