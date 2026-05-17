@@ -32,14 +32,14 @@ import java.util.function.Function;
  * @see DialogLoader
  * @see DialogExecutor
  */
-public record Dialog (List<Either<String, DialogLine>> lines, double delayMultiplier, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound, @Nullable Identifier nextDialog, @Nullable CommandContainer nextCommand, int minDelay) {
+public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nullable String prefix, @Nullable String suffix, @Nullable List<Sound> sound, @Nullable Identifier nextDialog, @Nullable CommandContainer nextCommand, int minDelay) {
     /** An empty dialog used when data loading fails. */
     public static final Dialog EMPTY = new Dialog(List.of(), 1, (String) null, null, null, null, null, 0);
 
     public static final Codec<Dialog> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
                     Codec.either(Codec.STRING, DialogLine.CODEC).listOf().fieldOf("lines").forGetter(Dialog::lines),
-                    Codec.DOUBLE.optionalFieldOf("delay_multiplier", 1.0).forGetter(Dialog::delayMultiplier),
+                    Codec.DOUBLE.optionalFieldOf("delay_multiplier", 1.0).forGetter(Dialog::wpm),
                     Codec.STRING.optionalFieldOf("prefix").forGetter(opt(Dialog::prefix)),
                     Codec.STRING.optionalFieldOf("suffix").forGetter(opt(Dialog::suffix)),
                     Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(Dialog::sound)),
@@ -131,7 +131,7 @@ public record Dialog (List<Either<String, DialogLine>> lines, double delayMultip
     public @NotNull String toString() {
         return "Dialog{" +
                 "lines=" + lines +
-                ", delayMultiplier=" + delayMultiplier +
+                ", delayMultiplier=" + wpm +
                 ", prefix='" + prefix + '\'' +
                 ", suffix='" + suffix + '\'' +
                 ", sound=" + sound +
