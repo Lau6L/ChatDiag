@@ -110,27 +110,12 @@ public class DialogExecutor {
             } else {
                 future.complete(players);
             }
-            executeCommand(dialog);
+            executeCommand(dialog.nextCommand());
             return;
         }
 
-        dialog.get(i).map(
-                str -> {
-                    sendString(dialog.line(i), players, dialog.sound());
-                    return str;
-                },
-                line -> {
-                    sendLine(line, players, dialog.sound(), dialog.prefix(), dialog.suffix());
-                    return line;
-                }
-        );
+        int delay = executeLineAndGetDelay(dialog, players, i);
 
-        int delay = dialog.get(i).map(
-                str -> getDelay(dialog.words(i), dialog.delayMultiplier()),
-                line -> line.delay() == -1 ?
-                        getDelay(dialog.words(i), dialog.delayMultiplier())
-                        : line.delay()
-        );
         new Schedulable(
                 () -> sendDialog(
                         dialog,
@@ -147,8 +132,25 @@ public class DialogExecutor {
                 });
     }
 
-    private static void executeCommand(Dialog dialog) {
-        CommandContainer commandContainer = dialog.nextCommand();
+    private static int executeLineAndGetDelay(Dialog dialog, Collection<ServerPlayerEntity> players, int i) {
+        return dialog.get(i).map(
+                str -> {
+                    sendString(dialog.line(i), players, dialog.sound());
+                    return getDelay(dialog.words(i), dialog.delayMultiplier());
+                },
+                line -> {
+                    sendLine(line, players, dialog.sound(), dialog.prefix(), dialog.suffix());
+                    if (line.command() != null) {
+                        executeCommand(line.command());
+                    }
+                    return line.delay() == -1 ?
+                            getDelay(dialog.words(i), dialog.delayMultiplier())
+                            : line.delay();
+                }
+        );
+    }
+
+    private static void executeCommand(@Nullable CommandContainer commandContainer) {
         if (commandContainer == null) return;
         try {
             ServerCommandSource source = commandContainer.source();
