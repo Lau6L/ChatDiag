@@ -48,7 +48,7 @@ public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nulla
                             dialog.nextCommand == null ?
                                     null
                                     : dialog.nextCommand.command)),
-                    Codec.INT.optionalFieldOf("minimum_delay", 10).forGetter(Dialog::minDelay)
+                    Codec.INT.optionalFieldOf("minimum_delay", 50).forGetter(Dialog::minDelay)
             ).apply(instance, Dialog::new)
     );
 
