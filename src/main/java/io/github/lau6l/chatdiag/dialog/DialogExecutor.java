@@ -26,21 +26,6 @@ import java.util.concurrent.CompletableFuture;
  */
 public class DialogExecutor {
     /**
-     * Constant representing the delay for a single word.
-     * When a dialog's {@link Dialog#delayMultiplier delayMultiplier} is 1,
-     * this renders each line at 120 Words Per Minute.
-     */
-    public static final int BASE_DELAY = 10;
-
-    /**
-     * Minimum tick delay between lines. Equivalent to 2.5 seconds.
-     * <p>
-     * If a line is complex (i.e. {@link DialogLine}), its {@link DialogLine#delay}
-     * attribute can override this.
-     */
-    public static final int MIN_DELAY = (int) (20 * 2.5);
-
-    /**
      * Loads a dialog from data and starts sending it to the given players.
      *
      * @param id the dialog identifier
@@ -136,7 +121,7 @@ public class DialogExecutor {
         return dialog.get(i).map(
                 str -> {
                     sendString(dialog.line(i), players, dialog.sound());
-                    return getDelay(dialog.words(i), dialog.delayMultiplier());
+                    return getDelay(dialog, i);
                 },
                 line -> {
                     sendLine(line, players, dialog.sound(), dialog.prefix(), dialog.suffix());
@@ -144,7 +129,7 @@ public class DialogExecutor {
                         executeCommand(line.command());
                     }
                     return line.delay() == -1 ?
-                            getDelay(dialog.words(i), dialog.delayMultiplier())
+                            getDelay(dialog, i)
                             : line.delay();
                 }
         );
@@ -164,8 +149,8 @@ public class DialogExecutor {
         }
     }
 
-    private static int getDelay(int wordCount, double delayMultiplier) {
-        return (int) (Math.max(MIN_DELAY, wordCount * BASE_DELAY) * delayMultiplier);
+    private static int getDelay(Dialog dialog, int i) {
+        return (int) Math.max(dialog.minDelay(), dialog.words(i) * 60 * 20 / dialog.wpm());
     }
 
     /**
