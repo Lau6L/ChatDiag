@@ -8,6 +8,7 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -16,12 +17,20 @@ import java.util.function.Function;
 /**
  * A full chat dialog definition. Loaded from {@link DialogLoader}.
  * <p>
- * A dialog contains a sequence of lines, a delay multiplier that controls relative pacing between
- * lines, optional global prefix and suffix texts, an optional sound list, and an optional identifier
- * to another dialog to chain dialogs.
+ * A dialog contains:
+ * <ul>
+ *     <li>A sequence of lines</li>
+ *     <li>A line prefix</li>
+ *     <li>A line suffix</li>
+ *     <li>Words per Minute</li>
+ *     <li>A minimum delay between lines</li>
+ *     <li>A list of sounds</li>
+ *     <li>An identifier for the next dialog in a dialog chain</li>
+ *     <li>A {@link CommandContainer} to execute a command</li>
+ * </ul>
  * <p>
  * A line can be represented as either a {@link String} or a {@link DialogLine}. {@code DialogLine}s
- * are complex versions of a string line, with custom prefix, suffix, and sound attributes, as well as
+ * are complex versions of a string line, with custom prefix, suffix, delay, sound, and command attributes, as well as
  * override options.
  * <p>
  * Chained dialogs share the same future, which will only complete when the entire series of dialogs
@@ -29,6 +38,7 @@ import java.util.function.Function;
  *
  * @see DialogLine
  * @see Sound
+ * @see CommandContainer
  * @see DialogLoader
  * @see DialogExecutor
  */
@@ -71,6 +81,12 @@ public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nulla
         return string == null ? "" : string;
     }
 
+    /**
+     * Populates this dialog's {@link Dialog#nextCommand} with a {@link ServerCommandSource} if present and returns itself.
+     *
+     * @param source the command source
+     * @return this dialog
+     */
     public Dialog withSource(ServerCommandSource source) {
         if (nextCommand != null) {
             nextCommand.source(source);
@@ -89,10 +105,10 @@ public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nulla
     }
 
     /**
-     * Applies prefix and suffix texts to a line, obeying {@link DialogLine} overriding settings if the line is complex.
+     * Applies prefix and suffix texts to a line, overriding settings if the line is a {@link DialogLine}.
      *
      * @param index the line index
-     * @return the rendered line text
+     * @return the rendered line text string
      */
     public String line(int index) {
         return lines.get(index).map(
@@ -128,13 +144,16 @@ public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nulla
     }
 
     @Override
-    public @NotNull String toString() {
+    public @NonNull String toString() {
         return "Dialog{" +
                 "lines=" + lines +
-                ", delayMultiplier=" + wpm +
+                ", wpm=" + wpm +
                 ", prefix='" + prefix + '\'' +
                 ", suffix='" + suffix + '\'' +
                 ", sound=" + sound +
+                ", nextDialog=" + nextDialog +
+                ", nextCommand=" + nextCommand +
+                ", minDelay=" + minDelay +
                 '}';
     }
 }
