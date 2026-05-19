@@ -8,7 +8,6 @@ import net.minecraft.util.Identifier;
 import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.jspecify.annotations.NonNull;
 
 import java.util.List;
 import java.util.Optional;
@@ -144,7 +143,7 @@ public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nulla
     }
 
     @Override
-    public @NonNull String toString() {
+    public @NotNull String toString() {
         return "Dialog{" +
                 "lines=" + lines +
                 ", wpm=" + wpm +
