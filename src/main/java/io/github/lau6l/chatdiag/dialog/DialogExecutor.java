@@ -26,22 +26,23 @@ import java.util.concurrent.CompletableFuture;
  */
 public class DialogExecutor {
     /**
-     * Loads a dialog from data and starts sending it to the given players.
+     * Starts a dialog event.
      *
-     * @param id the dialog identifier
-     * @param players the target players
-     * @return the resulting dialog's future
+     * @param id a dialog's namespaced id
+     * @param players the players to show this dialog to
+     * @param source a command source to execute, only needed if the given dialog includes {@link CommandContainer}s.
+     * @return a future, which will complete when the dialog has finished.
      */
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players, ServerCommandSource source) {
         return startDialog(Dialogs.get(id, source), players);
     }
 
     /**
-     * Starts sending an in-memory dialog to the given players.
+     * Starts a dialog event. A source should be included within the given dialog through {@link Dialog#withSource(ServerCommandSource)}
      *
-     * @param dialog the dialog to send
-     * @param players the target players
-     * @return the dialog's future
+     * @param dialog an in-memory dialog
+     * @param players the players to show this dialog to
+     * @return a future, which will complete when the dialog has finished.
      */
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Dialog dialog, Collection<ServerPlayerEntity> players) {
         CompletableFuture<Collection<ServerPlayerEntity>> future = new CompletableFuture<>();
@@ -50,26 +51,25 @@ public class DialogExecutor {
     }
 
     /**
-     * Loads a dialog from data and starts sending it to the given players.
-     * <p>
-     * Accepts a future to chain dialogs without recursion, no new future is created.
+     * Starts a chained dialog event.
      *
-     * @param id the dialog identifier
-     * @param players the target players
-     * @return the resulting dialog's future
+     * @param id the dialog's namespaced id
+     * @param players the players to show this dialog to
+     * @param source a command source to execute, only needed if the given dialog includes {@link CommandContainer}s.
+     * @param future a completable future, which may be from a previous dialog
+     * @return the given {@code future}, which will complete when all dialogs in the chain have finished.
      */
-    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(Identifier id, Collection<ServerPlayerEntity> players, CompletableFuture<Collection<ServerPlayerEntity>> future) {
+    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(Identifier id, Collection<ServerPlayerEntity> players, ServerCommandSource source, CompletableFuture<Collection<ServerPlayerEntity>> future) {
         return startDialogWithFuture(Dialogs.get(id), players, future);
     }
 
     /**
-     * Starts sending an in-memory dialog to the given players.
-     * <p>
-     * Accepts a future to chain dialogs without recursion, no new future is created.
+     * Starts a chained dialog event. A source should be included within the given dialog through {@link Dialog#withSource(ServerCommandSource)}
      *
-     * @param dialog the dialog to send
-     * @param players the target players
-     * @return the dialog's future
+     * @param dialog am in-memory dialog
+     * @param players the players to show this dialog to
+     * @param future a completable future, which may be from a previous dialog
+     * @return the given {@code future}, which will complete when all dialogs in the chain have finished.
      */
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(Dialog dialog, Collection<ServerPlayerEntity> players, CompletableFuture<Collection<ServerPlayerEntity>> future) {
         if (dialog == null) {
@@ -91,7 +91,11 @@ public class DialogExecutor {
     private static void sendDialog(Dialog dialog, Collection<ServerPlayerEntity> players, int i, CompletableFuture<Collection<ServerPlayerEntity>> future) {
         if (i >= dialog.lines().size()) {
             if (dialog.nextDialog() != null) {
-                startDialogWithFuture(dialog.nextDialog(), players, future);
+                startDialogWithFuture(
+                        dialog.nextDialog(),
+                        players,
+                        dialog.nextCommand() == null ? null : dialog.nextCommand().source(),
+                        future);
             } else {
                 future.complete(players);
             }
@@ -117,11 +121,19 @@ public class DialogExecutor {
                 });
     }
 
+    /**
+     * Sends the line at the given dialog index and returns a delay for the next line to be sent.
+     *
+     * @param dialog a dialog
+     * @param players the players to send this line to
+     * @param i the dialog index to send
+     * @return a delay based on the line's words and WPM
+     */
     private static int executeLineAndGetDelay(Dialog dialog, Collection<ServerPlayerEntity> players, int i) {
         return dialog.get(i).map(
                 str -> {
                     sendString(dialog.line(i), players, dialog.sound());
-                    return getDelay(dialog, i);
+                    return getSimpleDelay(dialog, i);
                 },
                 line -> {
                     sendLine(line, players, dialog.sound(), dialog.prefix(), dialog.suffix());
@@ -129,12 +141,17 @@ public class DialogExecutor {
                         executeCommand(line.command());
                     }
                     return line.delay() == -1 ?
-                            getDelay(dialog, i)
+                            getSimpleDelay(dialog, i)
                             : line.delay();
                 }
         );
     }
 
+    /**
+     * Executes a given {@link CommandContainer}. The container should have a source already set.
+     *
+     * @param commandContainer the command and source to execute
+     */
     private static void executeCommand(@Nullable CommandContainer commandContainer) {
         if (commandContainer == null) return;
         try {
@@ -149,7 +166,10 @@ public class DialogExecutor {
         }
     }
 
-    private static int getDelay(Dialog dialog, int i) {
+    /**
+     * Returns the given line's delay, excluding any custom {@link DialogLine#delay()}.
+     */
+    private static int getSimpleDelay(Dialog dialog, int i) {
         return (int) Math.max(dialog.minDelay(), dialog.words(i) * 60 * 20 / dialog.wpm());
     }
 

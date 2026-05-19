@@ -41,6 +41,7 @@ public record DialogLine(String line, boolean replacePrefix, boolean replaceSuff
     public DialogLine(String line, boolean replacePrefix, boolean replaceSuffix, boolean replaceSound, Optional<String> prefix, Optional<String> suffix, int delay, Optional<List<Sound>> sound, Optional<String> command) {
         this(line, replacePrefix, replaceSuffix, replaceSound, prefix.orElse(null), suffix.orElse(null), delay, sound.orElse(null), new CommandContainer(command.orElse(null)));
     }
+
     /**
      * Returns this dialog line text, applying overrides to its parent dialog's prefix and suffix.
      *
