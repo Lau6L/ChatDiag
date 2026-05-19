@@ -20,7 +20,7 @@ import java.util.stream.Collectors;
 /**
  * Loads and serializes dialog definitions from JSON resources.
  * <p>
- * All stored dialogs must be inside the /data/[namespace]/chatdiag/ directory.
+ * All stored dialogs must be inside the {@code /data/[namespace]/chatdiag/} directory.
  */
 public class DialogLoader {
 
