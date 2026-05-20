@@ -66,7 +66,7 @@ public class DialogExecutor {
     /**
      * Starts a chained dialog event. A source should be included within the given dialog through {@link Dialog#withSource(ServerCommandSource)}
      *
-     * @param dialog am in-memory dialog
+     * @param dialog an in-memory dialog
      * @param players the players to show this dialog to
      * @param future a completable future, which may be from a previous dialog
      * @return the given {@code future}, which will complete when all dialogs in the chain have finished.
