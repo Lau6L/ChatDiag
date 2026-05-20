@@ -4,6 +4,7 @@ import io.github.lau6l.chatdiag.dialog.*;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.util.Identifier;
+import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
@@ -36,7 +37,7 @@ public class ChatDiagApi {
      * @param source a command source to execute, only needed if the given dialog includes {@link CommandContainer}s.
      * @return a future, which will complete when the dialog has finished.
      */
-    public CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players, ServerCommandSource source) {
+    public CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players, @Nullable ServerCommandSource source) {
         return DialogExecutor.startDialog(id, players, source);
     }
 
@@ -60,14 +61,14 @@ public class ChatDiagApi {
      * @param future a completable future, which may be from a previous dialog
      * @return the given {@code future}, which will complete when all dialogs in the chain have finished.
      */
-    public CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players, ServerCommandSource source, CompletableFuture<Collection<ServerPlayerEntity>> future) {
+    public CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players, @Nullable ServerCommandSource source, CompletableFuture<Collection<ServerPlayerEntity>> future) {
         return DialogExecutor.startDialogWithFuture(id, players, source, future);
     }
 
     /**
      * Starts a chained dialog event. A source should be included within the given dialog through {@link Dialog#withSource(ServerCommandSource)}
      *
-     * @param dialog am in-memory dialog
+     * @param dialog an in-memory dialog
      * @param players the players to show this dialog to
      * @param future a completable future, which may be from a previous dialog
      * @return the given {@code future}, which will complete when all dialogs in the chain have finished.
