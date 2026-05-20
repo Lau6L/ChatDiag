@@ -60,7 +60,7 @@ public class DialogExecutor {
      * @return the given {@code future}, which will complete when all dialogs in the chain have finished.
      */
     public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(Identifier id, Collection<ServerPlayerEntity> players, ServerCommandSource source, CompletableFuture<Collection<ServerPlayerEntity>> future) {
-        return startDialogWithFuture(Dialogs.get(id), players, future);
+        return startDialogWithFuture(Dialogs.get(id).withSource(source), players, future);
     }
 
     /**
