@@ -3,6 +3,7 @@ package io.github.lau6l.chatdiag.dialog;
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.lau6l.chatdiag.ChatDiag;
 import io.github.lau6l.chatdiag.util.Schedulable;
+import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
 import net.minecraft.sound.SoundCategory;
@@ -220,7 +221,17 @@ public class DialogExecutor {
 
     private static void playSounds(ServerPlayerEntity player, List<Sound> sounds) {
         for (Sound sound : sounds) {
-            Vec3d pos = sound.position() == null ? player.getEntityPos() : sound.position();
+            Vec3d pos = sound.position();
+            if (pos == null) {
+                if (ServerPlayNetworking.canSend(player, )) {
+                    ServerPlayNetworking.send(
+                            player,
+                            );
+                    return;
+                } else {
+                    pos = player.getEntityPos();
+                }
+            }
             player.getEntityWorld()
                     .playSound(
                             null,
