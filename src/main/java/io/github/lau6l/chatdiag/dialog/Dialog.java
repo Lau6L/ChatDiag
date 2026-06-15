@@ -11,7 +11,8 @@ import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
+
+import static io.github.lau6l.chatdiag.util.CodecUtil.opt;
 
 /**
  * A full chat dialog definition. Loaded from {@link DialogLoader}.
@@ -61,9 +62,7 @@ public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nulla
             ).apply(instance, Dialog::new)
     );
 
-    public static <O, A> Function<O, Optional<A>> opt(Function<O, A> nonOptionalGetter) {
-        return nonOptionalGetter.andThen(Optional::ofNullable);
-    }
+
     // this optional constructor and the use of opt() are here to simplify dialog structure to be nullable and digestible by the codec
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
     public Dialog(List<Either<String, DialogLine>> lines, double delayMultiplier, Optional<String> prefix, Optional<String> suffix, Optional<List<Sound>> sound, Optional<Identifier> nextDialog, Optional<String> nextCommand, int minDelay) {
