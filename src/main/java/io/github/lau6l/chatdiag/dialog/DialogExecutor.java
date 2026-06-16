@@ -2,6 +2,7 @@ package io.github.lau6l.chatdiag.dialog;
 
 import com.mojang.brigadier.exceptions.CommandSyntaxException;
 import io.github.lau6l.chatdiag.ChatDiag;
+import io.github.lau6l.chatdiag.network.SoundS2CPayload;
 import io.github.lau6l.chatdiag.util.Schedulable;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.server.command.ServerCommandSource;
@@ -154,7 +155,7 @@ public class DialogExecutor {
      * @param commandContainer the command and source to execute
      */
     private static void executeCommand(@Nullable CommandContainer commandContainer) {
-        if (commandContainer == null) return;
+        if (commandContainer == null || commandContainer.command == null) return;
         try {
             ServerCommandSource source = commandContainer.source();
             source.getDispatcher()
@@ -184,7 +185,11 @@ public class DialogExecutor {
     public static void sendString(String line, Collection<ServerPlayerEntity> players, @Nullable List<Sound> sounds) {
         for (ServerPlayerEntity player : players) {
             player.sendMessageToClient(Text.of(line), false);
-            if (sounds != null) playSounds(player, sounds);
+        }
+        if (sounds != null) {
+            for (Sound sound : sounds) {
+                playSound(players, sound);
+            }
         }
     }
 
@@ -204,8 +209,16 @@ public class DialogExecutor {
 
         for (ServerPlayerEntity player : players) {
             player.sendMessageToClient(Text.of(line.get(prefix, suffix)), false);
-            if (defaultSounds != null && !line.replaceSound()) playSounds(player, defaultSounds);
-            if (hasSound) playSounds(player, sounds);
+        }
+        if (defaultSounds != null && !line.replaceSound()) {
+            for (Sound defaultSound : defaultSounds) {
+                playSound(players, defaultSound);
+            }
+        }
+        if (hasSound) {
+            for (Sound sound : sounds) {
+                playSound(players, sound);
+            }
         }
     }
 
@@ -219,29 +232,62 @@ public class DialogExecutor {
         sendLine(line, players, null, null, null);
     }
 
-    private static void playSounds(ServerPlayerEntity player, List<Sound> sounds) {
-        for (Sound sound : sounds) {
-            Vec3d pos = sound.position();
-            if (pos == null) {
-                if (ServerPlayNetworking.canSend(player, )) {
-                    ServerPlayNetworking.send(
-                            player,
-                            );
-                    return;
-                } else {
-                    pos = player.getEntityPos();
-                }
-            }
-            player.getEntityWorld()
-                    .playSound(
-                            null,
-                            pos.x, pos.y, pos.z,
-                            SoundEvent.of(sound.id()),
-                            SoundCategory.MASTER,
-                            16,
-                            sound.pitch()
-                    );
+    private static void playSound(Collection<ServerPlayerEntity> players, Sound sound) {
+        Vec3d pos = sound.position();
+
+        if (pos == null) {
+            playSoundsNoPos(players, sound);
+        } else {
+            playSoundsPos(players, sound, pos);
         }
+    }
+
+    private static void playSoundsNoPos(Collection<ServerPlayerEntity> players, Sound sound) {
+        SoundS2CPayload payload = new SoundS2CPayload(sound);
+        SoundEvent soundEvent = SoundEvent.of(sound.id());
+
+        for (ServerPlayerEntity player : players) {
+            if (ServerPlayNetworking.canSend(player, SoundS2CPayload.ID)) {
+                ServerPlayNetworking.send(
+                        player,
+                        payload
+                );
+            } else {
+                playSound(
+                        player,
+                        player.getEntityPos(),
+                        soundEvent,
+                        sound.pitch(),
+                        sound.volume()
+                );
+            }
+        }
+    }
+
+    public static void playSoundsPos(Collection<ServerPlayerEntity> players, Sound sound, Vec3d pos) {
+        SoundEvent soundEvent = SoundEvent.of(sound.id());
+
+        for (ServerPlayerEntity player : players) {
+            playSound(
+                    player,
+                    pos,
+                    soundEvent,
+                    sound.pitch(),
+                    sound.volume()
+            );
+        }
+    }
+
+    private static void playSound(ServerPlayerEntity player, Vec3d pos, SoundEvent soundEvent, float pitch, float volume) {
+        player.getEntityWorld()
+                .playSound(
+                        null,
+                        pos.x, pos.y, pos.z,
+                        soundEvent,
+                        SoundCategory.MASTER,
+                        volume,
+                        pitch
+                );
     }
 }
 
