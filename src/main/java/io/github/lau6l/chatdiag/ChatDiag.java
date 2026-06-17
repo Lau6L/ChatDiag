@@ -35,7 +35,7 @@ public class ChatDiag implements ModInitializer {
                 ConstantArgumentSerializer.of(DialogArgumentType::dialog)
         );
         PayloadTypeRegistry.playS2C().register(SoundS2CPayload.ID, SoundS2CPayload.CODEC);
-        ServerLifecycleEvents.SERVER_STARTING.register(this::onServerStart);
+        ServerLifecycleEvents.SERVER_STARTED.register(this::onServerStart);
     }
 
     private void registerCommands() {
