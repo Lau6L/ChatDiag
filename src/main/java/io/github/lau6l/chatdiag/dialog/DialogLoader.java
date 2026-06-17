@@ -100,7 +100,7 @@ public class DialogLoader {
     }
 
     /**
-     * Parses a dialog from JSON.
+     * Parses a {@link Dialog} from JSON.
      *
      * @param json the JSON input
      * @return the parsed dialog
