@@ -21,6 +21,10 @@ import static io.github.lau6l.chatdiag.util.CodecUtil.opt;
  *
  * @param id the sound's identifier
  * @param pitch the sound's pitch
+ * @param volume the sound's volume
+ * @param positions the sound's positions. If null, plays a client-side non-localized sound; plays at the specified
+ *                  positions otherwise. Can be {@link Either} a {@link Vec3d} or an Entity Selector string, which
+ *                  will be computed on dialog execution.
  */
 public record Sound(Identifier id, float pitch, float volume, @Nullable List<Either<Vec3d, String>> positions) {
     public static final Codec<Either<Vec3d, String>> POS_CODEC = Codec.either(Vec3d.CODEC, Codec.STRING);
@@ -39,9 +43,9 @@ public record Sound(Identifier id, float pitch, float volume, @Nullable List<Eit
             (id, pitch, volume) -> new Sound(id, pitch, volume, (List<Either<Vec3d, String>>) null)
     );
 
-    // this optional constructor and the use of opt() are here to simplify dialog structure to be nullable and digestible by the codec
+    // this optional constructor and the use of CodecUtil.opt() are here to simplify dialog structure to be nullable and digestible by the codec
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public Sound(Identifier id, float pitch, float volume, Optional<List<Either<Vec3d, String>>> positions) {
+    private Sound(Identifier id, float pitch, float volume, Optional<List<Either<Vec3d, String>>> positions) {
         this(id, pitch, volume, positions.orElse(null));
     }
 }
