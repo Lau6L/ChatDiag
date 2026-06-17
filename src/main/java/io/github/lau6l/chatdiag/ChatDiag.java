@@ -3,8 +3,8 @@ package io.github.lau6l.chatdiag;
 import io.github.lau6l.chatdiag.api.ChatDiagApi;
 import io.github.lau6l.chatdiag.command.ChatDiagCommand;
 import io.github.lau6l.chatdiag.command.DialogArgumentType;
-import io.github.lau6l.chatdiag.dialog.DialogExecutor;
 import io.github.lau6l.chatdiag.dialog.DialogLoader;
+import io.github.lau6l.chatdiag.dialog.SoundPlayer;
 import io.github.lau6l.chatdiag.network.SoundS2CPayload;
 import io.github.lau6l.chatdiag.util.Scheduler;
 import net.fabricmc.api.ModInitializer;
@@ -45,7 +45,7 @@ public class ChatDiag implements ModInitializer {
     }
 
     private void onServerStart(MinecraftServer server) {
-        DialogExecutor.initialize(server);
+        SoundPlayer.initialize(server);
     }
 
     public static Identifier of(String value) {
