@@ -6,7 +6,8 @@ import java.util.Optional;
 import java.util.function.Function;
 
 public class CodecUtil {
-    public static <O, A> Function<O, Optional<A>> opt(@NotNull Function<O, A> nonOptionalGetter) {
-        return nonOptionalGetter.andThen(Optional::ofNullable);
+    /** Helper method for codecs, turns a nullable variable function into an {@link Optional} object. */
+    public static <O, A> Function<O, Optional<A>> opt(@NotNull Function<O, A> nonOptionalFunction) {
+        return nonOptionalFunction.andThen(Optional::ofNullable);
     }
 }
