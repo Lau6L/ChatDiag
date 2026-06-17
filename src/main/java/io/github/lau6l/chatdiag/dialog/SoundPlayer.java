@@ -32,7 +32,7 @@ public class SoundPlayer {
     private static ServerCommandSource SOURCE;
 
     public static void initialize(MinecraftServer server) {
-        if (SOURCE == null) return;
+        if (SOURCE != null) return;
         SOURCE = new ServerCommandSource(
                 CommandOutput.DUMMY,
                 Vec3d.ZERO,
