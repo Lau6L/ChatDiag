@@ -53,6 +53,7 @@ public class ChatDiag implements ModInitializer {
     }
 
     private static final ChatDiagApi API = ChatDiagApi.api();
+    /** Retrieves the ChatDiag API. */
     public static ChatDiagApi api() {
         return API;
     }
