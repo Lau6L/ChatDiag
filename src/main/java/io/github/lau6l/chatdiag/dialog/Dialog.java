@@ -51,22 +51,22 @@ public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nulla
     public static final Codec<Dialog> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
                     Codec.either(Codec.STRING, DialogLine.CODEC).listOf().fieldOf("lines").forGetter(Dialog::lines),
-                    Codec.DOUBLE.optionalFieldOf("wpm", 1.0).forGetter(Dialog::wpm),
+                    Codec.DOUBLE.optionalFieldOf("wpm", 120.0).forGetter(Dialog::wpm),
                     Codec.STRING.optionalFieldOf("prefix").forGetter(opt(Dialog::prefix)),
                     Codec.STRING.optionalFieldOf("suffix").forGetter(opt(Dialog::suffix)),
                     Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(Dialog::sound)),
                     Identifier.CODEC.optionalFieldOf("next_dialog").forGetter(opt(Dialog::nextDialog)),
                     Codec.STRING.optionalFieldOf("next_command").forGetter(opt(dialog ->
                             dialog.nextCommand == null ? null : dialog.nextCommand.command)),
-                    Codec.INT.optionalFieldOf("minimum_delay", 50).forGetter(Dialog::minDelay)
+                    Codec.INT.optionalFieldOf("minimum_delay", 20).forGetter(Dialog::minDelay)
             ).apply(instance, Dialog::new)
     );
 
 
     // this optional constructor and the use of CodecUtil.opt() are here to simplify dialog structure to be nullable and digestible by the codec
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    private Dialog(List<Either<String, DialogLine>> lines, double delayMultiplier, Optional<String> prefix, Optional<String> suffix, Optional<List<Sound>> sound, Optional<Identifier> nextDialog, Optional<String> nextCommand, int minDelay) {
-        this(lines, delayMultiplier, prefix.orElse(null), suffix.orElse(null), sound.orElse(null), nextDialog.orElse(null), new CommandContainer(nextCommand.orElse(null)), minDelay);
+    private Dialog(List<Either<String, DialogLine>> lines, double wpm, Optional<String> prefix, Optional<String> suffix, Optional<List<Sound>> sound, Optional<Identifier> nextDialog, Optional<String> nextCommand, int minDelay) {
+        this(lines, wpm, prefix.orElse(null), suffix.orElse(null), sound.orElse(null), nextDialog.orElse(null), new CommandContainer(nextCommand.orElse(null)), minDelay);
     }
 
     /**
