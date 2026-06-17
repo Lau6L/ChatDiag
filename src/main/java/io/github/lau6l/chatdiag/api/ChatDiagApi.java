@@ -15,16 +15,12 @@ public class ChatDiagApi {
     private ChatDiagApi() {
     }
 
-    /**
-     * Retrieves the ChatDiag API
-     */
+    /** Retrieves the ChatDiag API. */
     public static ChatDiagApi api() {
         return INSTANCE;
     }
 
-    /**
-     * Returns a dialog by namespaced id.
-     */
+    /** Returns a dialog by namespaced id. */
     public Dialog getDialog(Identifier id) {
         return Dialogs.get(id);
     }
@@ -35,18 +31,18 @@ public class ChatDiagApi {
      * @param id a dialog's namespaced id
      * @param players the players to show this dialog to
      * @param source a command source to execute, only needed if the given dialog includes {@link CommandContainer}s.
-     * @return a future, which will complete when the dialog has finished.
+     * @return a {@link CompletableFuture}, which will complete when the dialog has finished.
      */
     public CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players, @Nullable ServerCommandSource source) {
         return DialogExecutor.startDialog(id, players, source);
     }
 
     /**
-     * Starts a dialog event. A source should be included within the given dialog through {@link Dialog#withSource(ServerCommandSource)}
+     * Starts a dialog event. A source should be included in the given dialog through {@link Dialog#withSource(ServerCommandSource)}
      *
      * @param dialog an in-memory dialog
      * @param players the players to show this dialog to
-     * @return a future, which will complete when the dialog has finished.
+     * @return a {@link CompletableFuture}, which will complete when the dialog has finished.
      */
     public CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Dialog dialog, Collection<ServerPlayerEntity> players) {
         return DialogExecutor.startDialog(dialog, players);
@@ -66,7 +62,7 @@ public class ChatDiagApi {
     }
 
     /**
-     * Starts a chained dialog event. A source should be included within the given dialog through {@link Dialog#withSource(ServerCommandSource)}
+     * Starts a chained dialog event. A source should be included in the given dialog through {@link Dialog#withSource(ServerCommandSource)}
      *
      * @param dialog an in-memory dialog
      * @param players the players to show this dialog to
@@ -77,10 +73,24 @@ public class ChatDiagApi {
         return DialogExecutor.startDialogWithFuture(dialog, players, future);
     }
 
+    /**
+     * Serializes a {@link Dialog} to JSON.
+     * <p>
+     * Can be used by other mods for data generation.
+     *
+     * @param dialog the dialog to serialize
+     * @return a JSON string
+     */
     public String serializeDialog(Dialog dialog) {
         return DialogLoader.serializeDialog(dialog);
     }
 
+    /**
+     * Parses a {@link Dialog} from JSON.
+     *
+     * @param json the JSON input
+     * @return the parsed dialog
+     */
     public Dialog deserializeDialog(String json) {
         return DialogLoader.deserializeDialog(json);
     }

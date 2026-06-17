@@ -2,6 +2,9 @@ package io.github.lau6l.chatdiag.dialog;
 
 import net.minecraft.server.command.ServerCommandSource;
 
+/**
+ * A Minecraft command with a nullable source.
+ */
 public class CommandContainer {
     public final String command;
     private ServerCommandSource source;
