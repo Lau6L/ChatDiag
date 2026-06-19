@@ -21,6 +21,8 @@ base {
     archivesName = project.archives_base_name
 }
 
+def buildName = "${archives_base_name}-${version}"
+
 
 repositories {
     // Add repositories to retrieve artifacts from in here.
@@ -81,31 +83,12 @@ jar {
     }
 }
 
-// as hacky as can be
-tasks.register("buildAll", Exec) {
-    def commands = ""
-    file("version")
-            .listFiles()
-            .findAll()
-            .each { file ->
-                def profile = file.name.replace(".properties", "")
-
-                commands += "gradlew build -Pbuild_profile=${profile} | gradlew modrinth -Pbuild_profile=${profile} | "
-    }
-
-    commands = commands.substring(0, commands.length() - 3)
-    println(commands)
-    commands = commands.split(" ")
-    def line = ['cmd', 'cmd', '/c'] as List<String>
-    line.addAll(commands)
-    commandLine line
-}
-
 modrinth {
     token = System.getenv("MODRINTH_TOKEN")
     projectId = "chatdiag"
     versionNumber = "${project.version}"
     uploadFile = remapJar
+    additionalFiles = [file("${layout.buildDirectory.get()}/libs/${buildName}-sources.jar")]
     gameVersions = [minecraftVersion]
     loaders = ["fabric"]
     dependencies {
