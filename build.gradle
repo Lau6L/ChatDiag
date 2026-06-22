@@ -14,7 +14,7 @@ def minecraftVersions = buildVersion.getProperty("minecraft_version").split(",")
 def latestMinecraftVersion = minecraftVersions.last()
 def minecraftVersionRange = minecraftVersions.length == 1 ?
         "${minecraftVersions.first()}".toString()
-        : "[${minecraftVersions.first()}-${minecraftVersions.last()}]".toString()
+        : "(${minecraftVersions.first()}-${minecraftVersions.last()})".toString()
 def yarnMappings = buildVersion.getProperty("yarn_mappings")
 def fabricApiVersion = buildVersion.getProperty("fabric_api_version")
 
