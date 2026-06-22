@@ -9,13 +9,15 @@ import net.minecraft.util.dynamic.Codecs;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.jspecify.annotations.NonNull;
+import java.util.concurrent.CompletableFuture;
 
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
+
+import static io.github.lau6l.chatdiag.util.CodecUtil.opt;
 
 /**
- * A full chat dialog definition. Loaded from {@link DialogLoader}.
+ * A full chat dialog definition. Can be loaded from {@link DialogLoader}.
  * <p>
  * A dialog contains:
  * <ul>
@@ -23,17 +25,17 @@ import java.util.function.Function;
  *     <li>A line prefix</li>
  *     <li>A line suffix</li>
  *     <li>Words per Minute</li>
- *     <li>A minimum delay between lines</li>
  *     <li>A list of sounds</li>
  *     <li>An identifier for the next dialog in a dialog chain</li>
  *     <li>A {@link CommandContainer} to execute a command</li>
+ *     <li>A minimum delay between lines</li>
  * </ul>
  * <p>
  * A line can be represented as either a {@link String} or a {@link DialogLine}. {@code DialogLine}s
  * are complex versions of a string line, with custom prefix, suffix, delay, sound, and command attributes, as well as
  * override options.
  * <p>
- * Chained dialogs share the same future, which will only complete when the entire series of dialogs
+ * Chained dialogs share the same {@link CompletableFuture}, which will only complete when the entire series of dialogs
  * is complete.
  *
  * @see DialogLine
@@ -49,26 +51,22 @@ public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nulla
     public static final Codec<Dialog> CODEC = RecordCodecBuilder.create(
             instance -> instance.group(
                     Codec.either(Codec.STRING, DialogLine.CODEC).listOf().fieldOf("lines").forGetter(Dialog::lines),
-                    Codec.DOUBLE.optionalFieldOf("delay_multiplier", 1.0).forGetter(Dialog::wpm),
+                    Codec.DOUBLE.optionalFieldOf("wpm", 120.0).forGetter(Dialog::wpm),
                     Codec.STRING.optionalFieldOf("prefix").forGetter(opt(Dialog::prefix)),
                     Codec.STRING.optionalFieldOf("suffix").forGetter(opt(Dialog::suffix)),
                     Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(Dialog::sound)),
                     Identifier.CODEC.optionalFieldOf("next_dialog").forGetter(opt(Dialog::nextDialog)),
                     Codec.STRING.optionalFieldOf("next_command").forGetter(opt(dialog ->
-                            dialog.nextCommand == null ?
-                                    null
-                                    : dialog.nextCommand.command)),
-                    Codec.INT.optionalFieldOf("minimum_delay", 50).forGetter(Dialog::minDelay)
+                            dialog.nextCommand == null ? null : dialog.nextCommand.command)),
+                    Codec.INT.optionalFieldOf("minimum_delay", 20).forGetter(Dialog::minDelay)
             ).apply(instance, Dialog::new)
     );
 
-    public static <O, A> Function<O, Optional<A>> opt(Function<O, A> nonOptionalGetter) {
-        return nonOptionalGetter.andThen(Optional::ofNullable);
-    }
-    // this optional constructor and the use of opt() are here to simplify dialog structure to be nullable and digestible by the codec
+
+    // this optional constructor and the use of CodecUtil.opt() are here to simplify dialog structure to be nullable and digestible by the codec
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public Dialog(List<Either<String, DialogLine>> lines, double delayMultiplier, Optional<String> prefix, Optional<String> suffix, Optional<List<Sound>> sound, Optional<Identifier> nextDialog, Optional<String> nextCommand, int minDelay) {
-        this(lines, delayMultiplier, prefix.orElse(null), suffix.orElse(null), sound.orElse(null), nextDialog.orElse(null), new CommandContainer(nextCommand.orElse(null)), minDelay);
+    private Dialog(List<Either<String, DialogLine>> lines, double wpm, Optional<String> prefix, Optional<String> suffix, Optional<List<Sound>> sound, Optional<Identifier> nextDialog, Optional<String> nextCommand, int minDelay) {
+        this(lines, wpm, prefix.orElse(null), suffix.orElse(null), sound.orElse(null), nextDialog.orElse(null), new CommandContainer(nextCommand.orElse(null)), minDelay);
     }
 
     /**
@@ -82,7 +80,7 @@ public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nulla
     }
 
     /**
-     * Populates this dialog's {@link Dialog#nextCommand} with a {@link ServerCommandSource} if present and returns itself.
+     * Populates the dialog's {@link Dialog#nextCommand} with a {@link ServerCommandSource} if present and returns this.
      *
      * @param source the command source
      * @return this dialog
@@ -141,6 +139,13 @@ public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nulla
             }
         }
         return wordCount;
+    }
+
+    /**
+     * Returns the given line's delay, excluding any custom {@link DialogLine#delay()}.
+     */
+    public int getSimpleDelay(int index) {
+        return (int) Math.max(minDelay, words(index) * 60 * 20 / wpm);
     }
 
     @Override

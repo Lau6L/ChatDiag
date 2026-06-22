@@ -8,8 +8,8 @@ import org.jetbrains.annotations.Nullable;
 import java.util.List;
 import java.util.Optional;
 
-import static io.github.lau6l.chatdiag.dialog.Dialog.opt;
 import static io.github.lau6l.chatdiag.dialog.Dialog.orBlank;
+import static io.github.lau6l.chatdiag.util.CodecUtil.opt;
 
 /**
  * Represents a single complex line inside a dialog.
@@ -17,6 +17,8 @@ import static io.github.lau6l.chatdiag.dialog.Dialog.orBlank;
  * A line can override its parent dialog's prefix, suffix, and sound behavior.
  *
  * @see Dialog
+ * @see Sound
+ * @see CommandContainer
  */
 public record DialogLine(String line, boolean replacePrefix, boolean replaceSuffix, boolean replaceSound, @Nullable String prefix, @Nullable String suffix, int delay, @Nullable List<Sound> sound, @Nullable CommandContainer command) {
     public static final Codec<DialogLine> CODEC = RecordCodecBuilder.create(
@@ -36,9 +38,9 @@ public record DialogLine(String line, boolean replacePrefix, boolean replaceSuff
             ).apply(instance, DialogLine::new)
     );
 
-    // this optional constructor and the use of opt() are here to simplify dialog structure to be nullable and digestible by the codec
+    // this optional constructor and the use of CodecUtil.opt() are here to simplify dialog structure to be nullable and digestible by the codec
     @SuppressWarnings("OptionalUsedAsFieldOrParameterType")
-    public DialogLine(String line, boolean replacePrefix, boolean replaceSuffix, boolean replaceSound, Optional<String> prefix, Optional<String> suffix, int delay, Optional<List<Sound>> sound, Optional<String> command) {
+    private DialogLine(String line, boolean replacePrefix, boolean replaceSuffix, boolean replaceSound, Optional<String> prefix, Optional<String> suffix, int delay, Optional<List<Sound>> sound, Optional<String> command) {
         this(line, replacePrefix, replaceSuffix, replaceSound, prefix.orElse(null), suffix.orElse(null), delay, sound.orElse(null), new CommandContainer(command.orElse(null)));
     }
 

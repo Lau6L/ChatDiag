@@ -5,11 +5,8 @@ import io.github.lau6l.chatdiag.ChatDiag;
 import io.github.lau6l.chatdiag.util.Schedulable;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.server.network.ServerPlayerEntity;
-import net.minecraft.sound.SoundCategory;
-import net.minecraft.sound.SoundEvent;
 import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.Collection;
@@ -31,20 +28,27 @@ public class DialogExecutor {
      * @param id a dialog's namespaced id
      * @param players the players to show this dialog to
      * @param source a command source to execute, only needed if the given dialog includes {@link CommandContainer}s.
-     * @return a future, which will complete when the dialog has finished.
+     * @return a {@link CompletableFuture}, which will complete when the dialog has finished.
      */
-    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Identifier id, Collection<ServerPlayerEntity> players, ServerCommandSource source) {
+    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(
+            Identifier id,
+            Collection<ServerPlayerEntity> players,
+            ServerCommandSource source
+    ) {
         return startDialog(Dialogs.get(id, source), players);
     }
 
     /**
-     * Starts a dialog event. A source should be included within the given dialog through {@link Dialog#withSource(ServerCommandSource)}
+     * Starts a dialog event. A source should be included in the given dialog through {@link Dialog#withSource(ServerCommandSource)}
      *
      * @param dialog an in-memory dialog
      * @param players the players to show this dialog to
-     * @return a future, which will complete when the dialog has finished.
+     * @return a {@link CompletableFuture}, which will complete when the dialog has finished.
      */
-    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(Dialog dialog, Collection<ServerPlayerEntity> players) {
+    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialog(
+            Dialog dialog,
+            Collection<ServerPlayerEntity> players
+    ) {
         CompletableFuture<Collection<ServerPlayerEntity>> future = new CompletableFuture<>();
         sendDialog(dialog, players, 0, future);
         return future;
@@ -59,20 +63,29 @@ public class DialogExecutor {
      * @param future a completable future, which may be from a previous dialog
      * @return the given {@code future}, which will complete when all dialogs in the chain have finished.
      */
-    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(Identifier id, Collection<ServerPlayerEntity> players, ServerCommandSource source, CompletableFuture<Collection<ServerPlayerEntity>> future) {
+    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(
+            Identifier id,
+            Collection<ServerPlayerEntity> players,
+            ServerCommandSource source,
+            CompletableFuture<Collection<ServerPlayerEntity>> future
+    ) {
         return startDialogWithFuture(Dialogs.get(id).withSource(source), players, future);
     }
 
     /**
-     * Starts a chained dialog event. A source should be included within the given dialog through {@link Dialog#withSource(ServerCommandSource)}
+     * Starts a chained dialog event. A source should be included in the given dialog through {@link Dialog#withSource(ServerCommandSource)}
      *
      * @param dialog an in-memory dialog
      * @param players the players to show this dialog to
      * @param future a completable future, which may be from a previous dialog
      * @return the given {@code future}, which will complete when all dialogs in the chain have finished.
      */
-    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(Dialog dialog, Collection<ServerPlayerEntity> players, CompletableFuture<Collection<ServerPlayerEntity>> future) {
-        if (dialog == null) {
+    public static CompletableFuture<Collection<ServerPlayerEntity>> startDialogWithFuture(
+            Dialog dialog,
+            Collection<ServerPlayerEntity> players,
+            CompletableFuture<Collection<ServerPlayerEntity>> future
+    ) {
+        if (dialog == null || dialog == Dialog.EMPTY) {
             future.complete(players);
             return future;
         }
@@ -88,17 +101,21 @@ public class DialogExecutor {
      * @param i the current line index
      * @param future the dialog's future
      */
-    private static void sendDialog(Dialog dialog, Collection<ServerPlayerEntity> players, int i, CompletableFuture<Collection<ServerPlayerEntity>> future) {
+    private static void sendDialog(
+            Dialog dialog,
+            Collection<ServerPlayerEntity> players,
+            int i,
+            CompletableFuture<Collection<ServerPlayerEntity>> future
+    ) {
         if (i >= dialog.lines().size()) {
             if (dialog.nextDialog() != null) {
                 startDialogWithFuture(
                         dialog.nextDialog(),
                         players,
                         dialog.nextCommand() == null ? null : dialog.nextCommand().source(),
-                        future);
-            } else {
-                future.complete(players);
-            }
+                        future
+                );
+            } else future.complete(players);
             executeCommand(dialog.nextCommand());
             return;
         }
@@ -133,7 +150,7 @@ public class DialogExecutor {
         return dialog.get(i).map(
                 str -> {
                     sendString(dialog.line(i), players, dialog.sound());
-                    return getSimpleDelay(dialog, i);
+                    return dialog.getSimpleDelay(i);
                 },
                 line -> {
                     sendLine(line, players, dialog.sound(), dialog.prefix(), dialog.suffix());
@@ -141,19 +158,19 @@ public class DialogExecutor {
                         executeCommand(line.command());
                     }
                     return line.delay() == -1 ?
-                            getSimpleDelay(dialog, i)
+                            dialog.getSimpleDelay(i)
                             : line.delay();
                 }
         );
     }
 
     /**
-     * Executes a given {@link CommandContainer}. The container should have a source already set.
+     * Executes a given {@link CommandContainer}. Does nothing if its source is not set.
      *
      * @param commandContainer the command and source to execute
      */
     private static void executeCommand(@Nullable CommandContainer commandContainer) {
-        if (commandContainer == null) return;
+        if (commandContainer == null || commandContainer.command == null || commandContainer.source() == null) return;
         try {
             ServerCommandSource source = commandContainer.source();
             source.getDispatcher()
@@ -167,13 +184,6 @@ public class DialogExecutor {
     }
 
     /**
-     * Returns the given line's delay, excluding any custom {@link DialogLine#delay()}.
-     */
-    private static int getSimpleDelay(Dialog dialog, int i) {
-        return (int) Math.max(dialog.minDelay(), dialog.words(i) * 60 * 20 / dialog.wpm());
-    }
-
-    /**
      * Sends a single line to the given players, as a plain string.
      *
      * @param line the text to send
@@ -183,7 +193,11 @@ public class DialogExecutor {
     public static void sendString(String line, Collection<ServerPlayerEntity> players, @Nullable List<Sound> sounds) {
         for (ServerPlayerEntity player : players) {
             player.sendMessageToClient(Text.of(line), false);
-            if (sounds != null) playSounds(player, sounds);
+        }
+        if (sounds != null) {
+            for (Sound sound : sounds) {
+                SoundPlayer.playSound(players, sound);
+            }
         }
     }
 
@@ -203,8 +217,16 @@ public class DialogExecutor {
 
         for (ServerPlayerEntity player : players) {
             player.sendMessageToClient(Text.of(line.get(prefix, suffix)), false);
-            if (defaultSounds != null && !line.replaceSound()) playSounds(player, defaultSounds);
-            if (hasSound) playSounds(player, sounds);
+        }
+        if (defaultSounds != null && !line.replaceSound()) {
+            for (Sound defaultSound : defaultSounds) {
+                SoundPlayer.playSound(players, defaultSound);
+            }
+        }
+        if (hasSound) {
+            for (Sound sound : sounds) {
+                SoundPlayer.playSound(players, sound);
+            }
         }
     }
 
@@ -216,21 +238,6 @@ public class DialogExecutor {
      */
     public static void sendLine(DialogLine line, Collection<ServerPlayerEntity> players) {
         sendLine(line, players, null, null, null);
-    }
-
-    private static void playSounds(ServerPlayerEntity player, List<Sound> sounds) {
-        for (Sound sound : sounds) {
-            Vec3d pos = sound.position() == null ? player.getEntityPos() : sound.position();
-            player.getEntityWorld()
-                    .playSound(
-                            null,
-                            pos.x, pos.y, pos.z,
-                            SoundEvent.of(sound.id()),
-                            SoundCategory.MASTER,
-                            16,
-                            sound.pitch()
-                    );
-        }
     }
 }
 
