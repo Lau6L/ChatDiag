@@ -3,7 +3,7 @@ package io.github.lau6l.chatdiag.dialog;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import io.github.lau6l.chatdiag.util.CodecHelper;
+import io.github.lau6l.chatdiag.util.CodecUtil;
 import net.minecraft.server.command.ServerCommandSource;
 import net.minecraft.util.Identifier;
 import org.jetbrains.annotations.NotNull;
@@ -53,7 +53,7 @@ public record Dialog (List<Either<String, DialogLine>> lines, double wpm, @Nulla
                     Codec.DOUBLE.optionalFieldOf("wpm", 120.0).forGetter(Dialog::wpm),
                     Codec.STRING.optionalFieldOf("prefix").forGetter(opt(Dialog::prefix)),
                     Codec.STRING.optionalFieldOf("suffix").forGetter(opt(Dialog::suffix)),
-                    CodecHelper.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(Dialog::sound)),
+                    CodecUtil.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(Dialog::sound)),
                     Identifier.CODEC.optionalFieldOf("next_dialog").forGetter(opt(Dialog::nextDialog)),
                     Codec.STRING.optionalFieldOf("next_command").forGetter(opt(dialog ->
                             dialog.nextCommand == null ? null : dialog.nextCommand.command)),

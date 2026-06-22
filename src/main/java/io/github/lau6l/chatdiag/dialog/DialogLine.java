@@ -2,7 +2,7 @@ package io.github.lau6l.chatdiag.dialog;
 
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
-import net.minecraft.util.dynamic.Codecs;
+import io.github.lau6l.chatdiag.util.CodecUtil;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.List;
@@ -30,11 +30,9 @@ public record DialogLine(String line, boolean replacePrefix, boolean replaceSuff
                     Codec.STRING.optionalFieldOf("prefix").forGetter(opt(DialogLine::prefix)),
                     Codec.STRING.optionalFieldOf("suffix").forGetter(opt(DialogLine::suffix)),
                     Codec.INT.optionalFieldOf("delay", -1).forGetter(DialogLine::delay),
-                    Codecs.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(DialogLine::sound)),
+                    CodecUtil.listOrSingle(Sound.CODEC).optionalFieldOf("sound").forGetter(opt(DialogLine::sound)),
                     Codec.STRING.optionalFieldOf("command").forGetter(opt(line ->
-                            line.command == null ?
-                                    null
-                                    : line.command.command))
+                            line.command == null ? null : line.command.command))
             ).apply(instance, DialogLine::new)
     );
 

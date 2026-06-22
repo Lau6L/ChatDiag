@@ -3,11 +3,11 @@ package io.github.lau6l.chatdiag.dialog;
 import com.mojang.datafixers.util.Either;
 import com.mojang.serialization.Codec;
 import com.mojang.serialization.codecs.RecordCodecBuilder;
+import io.github.lau6l.chatdiag.util.CodecUtil;
 import net.minecraft.network.RegistryByteBuf;
 import net.minecraft.network.codec.PacketCodec;
 import net.minecraft.network.codec.PacketCodecs;
 import net.minecraft.util.Identifier;
-import net.minecraft.util.dynamic.Codecs;
 import net.minecraft.util.math.Vec3d;
 import org.jetbrains.annotations.Nullable;
 
@@ -33,7 +33,7 @@ public record Sound(Identifier id, float pitch, float volume, @Nullable List<Eit
                     Identifier.CODEC.fieldOf("id").forGetter(Sound::id),
                     Codec.FLOAT.optionalFieldOf("pitch", 1f).forGetter(Sound::pitch),
                     Codec.FLOAT.optionalFieldOf("volume", 1f).forGetter(Sound::volume),
-                    Codecs.listOrSingle(POS_CODEC).optionalFieldOf("pos").forGetter(opt(Sound::positions))
+                    CodecUtil.listOrSingle(POS_CODEC).optionalFieldOf("pos").forGetter(opt(Sound::positions))
             ).apply(instance, Sound::new)
     );
     public static final PacketCodec<RegistryByteBuf, Sound> PACKET_CODEC_NO_POS = PacketCodec.tuple(
