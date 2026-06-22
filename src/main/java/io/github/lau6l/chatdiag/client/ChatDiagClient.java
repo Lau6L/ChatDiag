@@ -19,7 +19,7 @@ public class ChatDiagClient implements ClientModInitializer {
             ClientPlayerEntity player = MinecraftClient.getInstance().player;
             if (player == null) return;
             Sound sound = payload.sound();
-            player.getEntityWorld().playSoundClient(
+            player.getWorld().playSoundClient(
                     SoundEvent.of(
                             sound.id()
                     ),
