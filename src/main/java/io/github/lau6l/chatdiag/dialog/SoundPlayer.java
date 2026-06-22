@@ -6,7 +6,6 @@ import com.mojang.datafixers.util.Either;
 import io.github.lau6l.chatdiag.network.SoundS2CPayload;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.command.argument.EntityArgumentType;
-import net.minecraft.command.permission.LeveledPermissionPredicate;
 import net.minecraft.entity.Entity;
 import net.minecraft.server.MinecraftServer;
 import net.minecraft.server.command.CommandOutput;
@@ -39,7 +38,7 @@ public class SoundPlayer {
                 Vec3d.ZERO,
                 Vec2f.ZERO,
                 server.getOverworld(),
-                LeveledPermissionPredicate.GAMEMASTERS,
+                4,
                 "",
                 Text.empty(),
                 server,
@@ -83,7 +82,7 @@ public class SoundPlayer {
                 .parse(new StringReader(entitySelector))
                 .getEntities(SOURCE)
                 .stream()
-                .map(Entity::getEntityPos)
+                .map(Entity::getPos)
                 .toList();
     }
 
@@ -117,7 +116,7 @@ public class SoundPlayer {
             } else {
                 playSound(
                         player,
-                        player.getEntityPos(),
+                        player.getPos(),
                         soundEvent,
                         sound.pitch(),
                         sound.volume()
@@ -143,7 +142,7 @@ public class SoundPlayer {
     }
 
     private static void playSound(ServerPlayerEntity player, Vec3d pos, SoundEvent soundEvent, float pitch, float volume) {
-        player.getEntityWorld()
+        player.getWorld()
                 .playSound(
                         null,
                         pos.x, pos.y, pos.z,
